@@ -1,0 +1,50 @@
+name: Run Backend Daily
+on:
+  schedule:
+    - cron: '0 21 * * *'  # 21:00 UTC (23:00 SAST)
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '!backend/package.json'
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install root dependencies
+        run: npm install
+      
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Build backend
+        working-directory: ./backend
+        run: npm run build
+      
+      - name: Run backend
+        working-directory: ./backend
+        env:
+          INVESTEC_HOST: ${{ secrets.INVESTEC_HOST }}
+          INVESTEC_CLIENT_ID: ${{ secrets.INVESTEC_CLIENT_ID }}
+          INVESTEC_CLIENT_SECRET: ${{ secrets.INVESTEC_CLIENT_SECRET }}
+          INVESTEC_API_KEY: ${{ secrets.INVESTEC_API_KEY }}
+          TRANSACTIONAL_ACCOUNT_ID: ${{ secrets.TRANSACTIONAL_ACCOUNT_ID }}
+          PRIME_SAVER_ACCOUNT_ID: ${{ secrets.PRIME_SAVER_ACCOUNT_ID }}
+          PROFILE_ID: ${{ secrets.PROFILE_ID }}
+          ENCRYPTION_PASSWORD: ${{ secrets.ENCRYPTION_PASSWORD }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          EXCLUSION_CATEGORIES: ${{ secrets.EXCLUSION_CATEGORIES }}
+          SALARY_DESCRIPTION: ${{ secrets.SALARY_DESCRIPTION }}
+        run: npm start

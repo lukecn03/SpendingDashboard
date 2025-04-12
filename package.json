@@ -1,0 +1,17 @@
+{
+    "name": "interest-preventer",
+    "version": "1.0.0",
+    "description": "A full-stack application for banking operations",
+    "scripts": {
+      "backend": "cd backend && npm run start",
+      "backend:build": "cd backend && npm run build",
+      "backend:dev": "cd backend && npm run dev",
+      
+      "frontend": "cd frontend && npm run dev",
+      "frontend:preview": "cd frontend && npm run preview",
+      "frontend:deploy": "cd frontend && npm run deploy"
+      
+    },
+    "author": "Luke Nobrega",
+    "license": "MIT"
+  }

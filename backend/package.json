@@ -1,0 +1,24 @@
+{
+  "name": "interest-preventer-backend",
+  "version": "1.0.0",
+  "description": "Backend for Interest Preventer application",
+  "main": "bin/main.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "cross-env testing=false npm run build && cross-env testing=false node bin/main.js",
+    "dev": "cross-env testing=true npm run build && cross-env testing=true node bin/main.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "firebase-admin": "^13.2.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/node-fetch": "^2.6.12",
+    "cross-env": "^7.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
