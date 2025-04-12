@@ -1,4 +1,4 @@
-name: Run Backend Daily
+name: Backend fetch and process
 on:
   schedule:
     - cron: '0 21 * * *'  # 21:00 UTC (23:00 SAST)
@@ -20,9 +20,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      
-      - name: Install root dependencies
-        run: npm install
       
       - name: Install backend dependencies
         working-directory: ./backend
