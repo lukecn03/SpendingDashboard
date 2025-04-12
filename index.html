@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spending Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    
+  <script type="module" crossorigin src="/assets/main-0736a20f.js"></script>
+  <link rel="stylesheet" href="/assets/index-8c20c44f.css">
+</head>
+<body>
+    <div class="container">
+        <div id="auth-screen" class="text-center mt-5">
+            <h1 class="mb-4">Spending Dashboard</h1>
+            <div class="card p-4" style="max-width: 400px; margin: 0 auto;">
+                <input type="password" id="password-input" class="form-control mb-3" placeholder="Enter passcode">
+                <button id="unlock-btn" class="btn btn-primary w-100 mb-3">Unlock</button>
+                <button id="face-id-btn" class="btn btn-outline-light w-100">
+                    <i class="bi bi-faceid"></i> Use Face ID
+                </button>
+            </div>
+        </div>
+
+        <div id="dashboard" class="d-none">
+            <header class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Financial Overview</h1>
+                <small id="last-updated" class="text-muted"></small>
+            </header>
+
+            <!-- Budget Card Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    Card Spending Budget
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Monthly Card Purchases</h5>
+                    <div class="budget-info">
+                        <span>Spent: <span id="card-spent"></span></span>
+                        <span>Budget: <span id="card-budget">R5,000.00</span></span>
+                    </div>
+                    <div class="budget-bar-container">
+                        <div id="budget-bar" class="budget-bar">
+                            <span id="budget-bar-text"></span>
+                        </div>
+                        <div class="budget-limit"></div>
+                    </div>
+                    <div class="budget-info">
+                        <span>Remaining: <span id="budget-remaining" class="budget-remaining"></span></span>
+                        <span id="budget-over" class="budget-over d-none">OVER BUDGET!</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            Amount topped-up yesterday
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Amount topped-up:</span>
+                                <strong id="current-balance"></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            Salary Information
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Last Salary:</span>
+                                <strong id="last-salary-date"></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    Daily Transactions
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-4 text-center">
+                            <div class="transaction-count debit-count" id="daily-debits"></div>
+                            <small class="text-muted">Debits</small>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="transaction-count credit-count" id="daily-credits"></div>
+                            <small class="text-muted">Credits</small>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="transaction-count pending-count" id="daily-pending"></div>
+                            <small class="text-muted">Pending</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            Spending by Category
+                        </div>
+                        <div class="card-body">
+                            <canvas id="spending-chart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            Monthly Spending Summary
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Total Spending:</span>
+                                <strong id="total-spending"></strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Discretionary:</span>
+                                <strong id="discretionary-spending"></strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Fixed Expenses:</span>
+                                <strong id="fixed-spending"></strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Pending Transactions:</span>
+                                <strong id="pending-transactions"></strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Card Spending:</span>
+                                <strong id="card-spending"></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <footer class="text-center text-muted mt-5 mb-3">
+        <small>Created by Luke Nobrega &copy; 2025</small>
+    </footer>
+</body>
+</html>
