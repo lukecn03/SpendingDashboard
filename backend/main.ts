@@ -354,8 +354,8 @@ async function main() {
         await calculateSpending(monthlyTransactions, pendingTransactions, stats);
 
         // Print the final stats, uncomment for testing
-        // console.log('\nFINAL BANKING STATISTICS:');
-        // console.log(JSON.stringify(stats, null, 2));
+        console.log('\nFINAL BANKING STATISTICS:');
+        console.log(JSON.stringify(stats, null, 2));
 
         if (!ENCRYPTION_PASSWORD) throw new Error('ENCRYPTION_PASSWORD not set');
         const encryptedData = await encryptStats(stats, ENCRYPTION_PASSWORD);
