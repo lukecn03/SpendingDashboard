@@ -8,6 +8,8 @@ export default defineConfig(({ mode }) => {
     base: '/',
     build: {
       outDir: 'dist',
+      assetsDir: 'assets',
+      emptyOutDir: true,
       rollupOptions: {
         input: {
           main: resolve(__dirname, 'index.html')
