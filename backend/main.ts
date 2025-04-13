@@ -166,7 +166,7 @@ async function checkSaverAccountBalance(token: string, amount: number): Promise<
 }
 
 async function transferFunds(token: string, amount: number): Promise<boolean> {
-    const url = new URL(`${API_BASE_URL}/za/pb/v1/accounts/${PRIME_SAVER_ID}/paymultiple`);
+    const url = new URL(`${API_BASE_URL}/za/pb/v1/accounts/${PRIME_SAVER_ID}/transfermultiple`);
 
     const transferList = [{
         beneficiaryAccountId: TRANSACTIONAL_ACCOUNT_ID,
