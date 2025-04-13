@@ -21,6 +21,7 @@ const ENCRYPTION_PASSWORD = process.env.ENCRYPTION_PASSWORD!;
 const FIREBASE_SERVICE_ACCOUNT = process.env.FIREBASE_SERVICE_ACCOUNT!;
 const DATABASE_URL = process.env.DATABASE_URL!;
 const MONTHLY_BUDGET = process.env.MONTHLY_BUDGET!;
+const SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION = process.env.SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION!;
 
 const salaryDescription = process.env.SALARY_DESCRIPTION!;
 let exclusionKeywords: string[] = [];
@@ -217,12 +218,14 @@ async function getPendingTransactions(token: string): Promise<Transaction[]> {
 
 async function calculateSpending(transactions: Transaction[], pendingTransactions: Transaction[], stats: BankingStats): Promise<void> {
     for (const transaction of transactions) {
-        if (transaction.type !== 'DEBIT') {
-            continue;
-        }
-        const isInternalTransfer = transaction.description.includes("MR LC NOBREGA 1100089298500");
+        const isInternalTransfer = transaction.description.includes(SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION);
+        
         if (isInternalTransfer) {
             continue; 
+        }
+
+        if (transaction.type !== 'DEBIT') {
+            continue;
         }
 
         const isExcluded = exclusionKeywords.some(keyword => 

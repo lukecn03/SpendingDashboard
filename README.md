@@ -93,21 +93,7 @@ cd interest-preventer
 
 1. Create a `.env` file in the `backend` directory:
 
-```env
-INVESTEC_HOST=https://openapi.investec.com
-INVESTEC_CLIENT_ID=your-client-id
-INVESTEC_CLIENT_SECRET=your-client-secret
-INVESTEC_API_KEY=your-api-key
-TRANSACTIONAL_ACCOUNT_ID=your-transactional-account-id
-PRIME_SAVER_ACCOUNT_ID=your-savings-account-id
-PROFILE_ID=your-profile-id
-ENCRYPTION_PASSWORD=your-encryption-password
-MONTHLY_BUDGET=full-overdraft-amount
-FIREBASE_SERVICE_ACCOUNT={"your":"firebase-service-account-json"}
-DATABASE_URL=https://your-firebase-database-url.firebaseio.com
-EXCLUSION_CATEGORIES=["RENT", "CAR"]
-SALARY_DESCRIPTION=salary-payment-description
-```
+Use example.env as reference
 
 2. Install backend dependencies:
 
@@ -120,13 +106,7 @@ npm install
 
 1. Create a `.env` file in the `frontend` directory:
 
-```env
-VITE_FIREBASE_API_KEY=your-firebase-api-key
-VITE_FIREBASE_DATABASE_URL=your-firebase-database-url
-VITE_FIREBASE_PROJECT_ID=your-firebase-project-id
-VITE_ENCRYPTION_PASSWORD=your-encryption-password
-VITE_MONTHLY_BUDGET=your-monthly-budget-amount
-```
+Use example.env as reference
 
 2. Install frontend dependencies:
 
