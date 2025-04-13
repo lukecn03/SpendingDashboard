@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "cross-env testing=false npm run build && cross-env testing=false node bin/main.js",
+    "start": "npm run build && node bin/main.js",
     "dev": "cross-env testing=true npm run build && cross-env testing=true node bin/main.js"
   },
   "dependencies": {

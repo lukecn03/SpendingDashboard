@@ -1,7 +1,8 @@
-name: Frontend Deploy
+name: Deploy to GitHub Pages
+
 on:
   push:
-    branches: [main]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -14,17 +15,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
@@ -34,7 +35,7 @@ jobs:
         working-directory: ./frontend
         run: npm ci
 
-      - name: Build frontend
+      - name: Build production app
         working-directory: ./frontend
         run: npm run build
         env:
@@ -43,13 +44,16 @@ jobs:
           FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
           FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          MONTHLY_BUDGET: ${{ secrets.MONTHLY_BUDGE }}
+          MONTHLY_BUDGET: ${{ secrets.MONTHLY_BUDGET }}
 
-      - name: Upload to GitHub Pages
-        uses: actions/upload-pages-artifact@v2
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: './frontend/dist'
-
+          path: './frontend/dist' 
+          
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
