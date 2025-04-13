@@ -14,11 +14,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     pinError.className = 'text-danger mt-2';
     pinInput.parentNode.appendChild(pinError);
 
-    // Force numeric input only
     pinInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
         
-        // Enable button only when 4 digits are entered
         if (e.target.value.length === 4) {
             unlockBtn.removeAttribute('disabled');
         } else {
@@ -26,7 +24,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Initially disable unlock button
     unlockBtn.setAttribute('disabled', 'disabled');
 
     if (!process.env.FIREBASE_API_KEY || 
@@ -60,12 +57,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     const envPin = process.env.ENCRYPTION_PASSWORD;
     const monthlyBudget = process.env.MONTHLY_BUDGET;
     let encryptedStats = null;
+    
+    if (!envPin) {
+        console.error('No encryption password set in environment variables');
+        showAuthScreen('Configuration error. Please contact support.');
+        return;
+    }
+    
+    let biometricAvailable = false;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     if (window.PublicKeyCredential) {
         try {
-            const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-            if (!available) {
+            biometricAvailable = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+            if (!biometricAvailable) {
                 faceIdBtn.classList.add('d-none');
+            } else {
+                if (isMobile) {
+                    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                        faceIdBtn.textContent = 'Use Face ID';
+                        faceIdBtn.innerHTML = '<i class="fas fa-face-viewfinder"></i> Use Face ID';
+                    } else {
+                        faceIdBtn.textContent = 'Use Biometric Auth';
+                        faceIdBtn.innerHTML = '<i class="fas fa-fingerprint"></i> Use Biometric Auth';
+                    }
+                }
             }
         } catch (e) {
             faceIdBtn.classList.add('d-none');
@@ -79,12 +95,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         authScreen.classList.remove('d-none');
         dashboard.classList.add('d-none');
         pinError.textContent = errorMessage;
-        pinInput.focus();
+        
+        if (isMobile && biometricAvailable) {
+            setTimeout(() => {
+                authenticateWithBiometrics();
+            }, 500);
+        } else {
+            pinInput.focus();
+        }
     };
 
     const tryLoadDashboard = async (pin) => {
         try {
-            if (envPin && pin !== envPin) {
+            if (pin !== envPin) {
                 throw new Error('Incorrect PIN');
             }
 
@@ -100,12 +123,64 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    if (!envPin) {
-        console.warn('No environment PIN set - showing auth screen');
-        showAuthScreen();
-    } else {
-        pinInput.focus();
+
+    showAuthScreen();
+
+    async function authenticateWithBiometrics() {
+        try {
+            const credential = await navigator.credentials.get({
+                publicKey: {
+                    challenge: new Uint8Array(32),
+                    rpId: window.location.hostname,
+                    userVerification: 'required',
+                    timeout: 60000
+                }
+            });
+    
+            console.log('Biometric login successful');
+            tryLoadDashboard(envPin);
+    
+        } catch (authError) {
+            console.warn('Authentication failed or not registered:', authError);
+    
+            if (authError.name === 'NotAllowedError' || authError.name === 'InvalidStateError') {
+                try {
+                    const userId = new Uint8Array(16);
+                    crypto.getRandomValues(userId);
+    
+                    const newCredential = await navigator.credentials.create({
+                        publicKey: {
+                            challenge: new Uint8Array(32),
+                            rp: {
+                                name: "Secure Dashboard"
+                            },
+                            user: {
+                                id: userId,
+                                name: "user@secure.com",
+                                displayName: "Secure User"
+                            },
+                            pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+                            authenticatorSelection: {
+                                authenticatorAttachment: "platform",
+                                userVerification: "required"
+                            },
+                            timeout: 60000
+                        }
+                    });
+    
+                    console.log('User registered via biometrics:', newCredential);
+                    tryLoadDashboard(envPin);
+                } catch (registerError) {
+                    console.error('Biometric registration failed:', registerError);
+                    showAuthScreen('Biometric registration failed. Please use your PIN.');
+                }
+            } else {
+                console.error('Biometric auth error:', authError);
+                showAuthScreen('Biometric authentication failed. Please use your PIN.');
+            }
+        }
     }
+    
 
     unlockBtn.addEventListener('click', () => {
         const pin = pinInput.value;
@@ -127,33 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    faceIdBtn.addEventListener('click', async () => {
-        try {
-            const credential = await navigator.credentials.get({
-                publicKey: {
-                    challenge: new Uint8Array(32),
-                    rpId: window.location.hostname,
-                    userVerification: 'required'
-                }
-            });
-            
-            const storedPin = sessionStorage.getItem('dashboard_pin');
-            if (storedPin) {
-                tryLoadDashboard(storedPin);
-            } else {
-                const pin = prompt('Please enter your 4-digit backup PIN to set up Face ID');
-                if (pin && pin.length === 4 && /^\d{4}$/.test(pin)) {
-                    sessionStorage.setItem('dashboard_pin', pin);
-                    tryLoadDashboard(pin);
-                } else {
-                    showAuthScreen('Please enter a valid 4-digit PIN');
-                }
-            }
-        } catch (e) {
-            console.error('Authentication failed:', e);
-            showAuthScreen('Face ID authentication failed. Please use your PIN.');
-        }
-    });
+    faceIdBtn.addEventListener('click', authenticateWithBiometrics);
 
     async function loadDashboard(pin) {
         try {
@@ -173,32 +222,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             
             const stats = await decryptStats(encryptedStats, pin);
-            displayStats(stats);
-            return true;
-        } catch (e) {
-            console.error('Error:', e);
-            throw new Error('Failed to load dashboard data');
-        }
-    }
-
-    async function loadDashboard(password) {
-        try {
-            try {
-                const snapshot = await get(ref(database, 'stats'));
-                if (snapshot.exists()) {
-                    encryptedStats = snapshot.val().data;
-                } else {
-                    console.error('No data available in Firebase');
-                }
-            } catch (error) {
-                console.error('Error fetching data from Firebase:', error);
-            }
-
-            if (!encryptedStats) {
-                throw new Error('No encrypted data available');
-            }
-            
-            const stats = await decryptStats(encryptedStats, password);
             displayStats(stats);
             return true;
         } catch (e) {
@@ -363,5 +386,4 @@ document.addEventListener('DOMContentLoaded', async () => {
             container.appendChild(item);
         });
     }
-    
 });
