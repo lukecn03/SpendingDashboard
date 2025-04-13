@@ -2,7 +2,13 @@ name: Frontend refresh and deploy
 
 on:
   schedule:
-    - cron: '0 21 * * *'  # 21:30 UTC (23:30 SAST)
+    - cron: '0 4 * * *'   # 06:00 SAST (UTC+2)
+    - cron: '0 7 * * *'   # 09:00 SAST
+    - cron: '0 10 * * *'  # 12:00 SAST
+    - cron: '0 13 * * *'  # 15:00 SAST
+    - cron: '0 16 * * *'  # 18:00 SAST
+    - cron: '0 19 * * *'  # 21:00 SAST
+    - cron: '30 21 * * *' # 23:30 SAST
   workflow_dispatch:
 
 permissions:

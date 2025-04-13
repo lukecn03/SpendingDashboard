@@ -26,7 +26,7 @@ To use this application, you'll need Investec Programmable Banking API credentia
 - **Financial awareness**: Provides detailed insights into spending patterns
 - **Budget tracking**: Helps stay on top of discretionary vs. fixed expenses
 - **Security-focused**: All sensitive data is encrypted
-- **Automated**: Runs daily without manual intervention
+- **Automated**: Runs frequently without manual intervention
 - **Open Banking**: Leverages Investec's APIs for real-time financial data
 
 ## Tech Stack
@@ -37,7 +37,7 @@ To use this application, you'll need Investec Programmable Banking API credentia
   - `node-fetch` for API calls
   - `firebase-admin` for data storage
   - `dotenv` for environment management
-- **Hosting**: GitHub Actions (scheduled daily execution)
+- **Hosting**: GitHub Actions (scheduled frequent execution)
 
 ### Frontend
 - **Framework**: Vanilla JS with Vite
@@ -152,7 +152,7 @@ The frontend is configured to run automatically via GitHub Actions every day at 
 
 ## Maintenance
 
-- The system will automatically update daily
+- The system will automatically update at 06:00, 09:00, 12:00, 15:00, 18:00, 21:00, and 23:30 SAST daily
 - To modify behavior, edit the backend code in `backend/src/`
 - To update the dashboard UI, edit the frontend code in `frontend/src/`
 
