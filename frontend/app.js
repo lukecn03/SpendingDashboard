@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const budgetBar = document.getElementById('budget-bar');
         const percentage = Math.min((cardSpent / cardBudget) * 100, 100);
         budgetBar.style.width = `${percentage}%`;
-        budgetBar.textContent = `${percentage.toFixed(0)}%`;
+        budgetBar.textContent = `${percentage.toFixed(2)}%`;
         
         if (cardSpent > cardBudget) {
             budgetBar.classList.add('over-budget');

@@ -327,7 +327,9 @@ async function main() {
         const lastDayTransactions = await getTransactions(token, formattedDate, formattedDate);
         stats.dailyTransactions.count = lastDayTransactions.length;
         stats.dailyTransactions.debitCount = lastDayTransactions.filter(t => t.type === 'DEBIT').length;
-        stats.dailyTransactions.creditCount = lastDayTransactions.filter(t => t.type === 'CREDIT').length;
+        stats.dailyTransactions.creditCount = lastDayTransactions.filter(t => 
+            t.type === 'CREDIT' && !t.description.includes("SCRIPT - TOP-UP")
+        ).length;
        
         // Fetch pending transactions
         console.log('\x1b[32m%s\x1b[0m', '5. Fetching pending transactions');
