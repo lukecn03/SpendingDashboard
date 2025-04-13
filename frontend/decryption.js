@@ -1,19 +1,17 @@
 export async function decryptStats(base64Data, password) {
     try {
-        // 1. First decode from base64
-        const encryptedData = atob(base64Data); // or use a base64 library
-        
-        // 2. Then split the IV and encrypted data
-        const [ivHex, encryptedHex] = encryptedData.split(':');
-        if (!ivHex || !encryptedHex) {
-            throw new Error('Invalid encrypted data format');
+        // 1. Decode from base64 to binary data
+        const binaryString = atob(base64Data);
+        const binaryData = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            binaryData[i] = binaryString.charCodeAt(i);
         }
-
-        // 3. Convert hex strings to Uint8Array
-        const iv = hexToUint8Array(ivHex);
-        const encrypted = hexToUint8Array(encryptedHex);
-
-        // 4. Derive the key (same as backend)
+        
+        // 2. Extract IV (first 16 bytes) and encrypted data
+        const iv = binaryData.slice(0, 16);
+        const encrypted = binaryData.slice(16);
+        
+        // 3. Derive the key
         const keyMaterial = await crypto.subtle.importKey(
             'raw',
             new TextEncoder().encode(password),
@@ -21,7 +19,7 @@ export async function decryptStats(base64Data, password) {
             false,
             ['deriveKey']
         );
-
+        
         const aesKey = await crypto.subtle.deriveKey(
             {
                 name: 'PBKDF2',
@@ -34,8 +32,8 @@ export async function decryptStats(base64Data, password) {
             false,
             ['decrypt']
         );
-
-        // 5. Decrypt
+        
+        // 4. Decrypt
         const decrypted = await crypto.subtle.decrypt(
             {
                 name: 'AES-CBC',
@@ -44,14 +42,10 @@ export async function decryptStats(base64Data, password) {
             aesKey,
             encrypted
         );
-
+        
         return JSON.parse(new TextDecoder().decode(decrypted));
     } catch (error) {
         console.error('Decryption failed:', error);
-        throw new Error('Failed to decrypt data - incorrect password or corrupted data');
+        throw new Error('Failed to decrypt data - corrupted data');
     }
-}
-
-function hexToUint8Array(hexString) {
-    return new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 }

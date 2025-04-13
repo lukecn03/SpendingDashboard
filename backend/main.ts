@@ -355,11 +355,9 @@ async function main() {
         if (!ENCRYPTION_PASSWORD) throw new Error('ENCRYPTION_PASSWORD not set');
         const encryptedData = await encryptStats(stats, ENCRYPTION_PASSWORD);
         
-        const base64Data = Buffer.from(encryptedData).toString('base64');
-        
         // Save to Firebase
         console.log('\x1b[32m%s\x1b[0m', '9. Saving to firebase');
-        await saveToFirebase(base64Data);
+        await saveToFirebase(encryptedData);
     } catch (error) {
         console.error('\x1b[31m%s\x1b[0m', 'Error:', error.message);
     } finally {

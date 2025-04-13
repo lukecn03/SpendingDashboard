@@ -1,4 +1,4 @@
-import { decryptStats } from './encryption.js';
+import { decryptStats } from './decryption.js';
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, get } from 'firebase/database';
 
@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const envPassword = process.env.ENCRYPTION_PASSWORD;
     const monthlyBudget = process.env.MONTHLY_BUDGET;
     let encryptedStats = null;
-
 
     if (window.PublicKeyCredential) {
         try {
@@ -185,7 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('pending-transactions').textContent = formatCurrency(stats.spending.monthly.pendingTransactionsTotal);
         document.getElementById('card-spending').textContent = formatCurrency(stats.spending.totalCardSpent);
         
-        const cardBudget = Number(process.env.MONTHLY_BUDGET || 5000);
+        const cardBudget = Number(monthlyBudget);
         const cardSpent = stats.spending.totalCardSpent || 0;
         const remainingBudget = cardBudget - cardSpent;
         

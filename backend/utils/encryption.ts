@@ -13,36 +13,16 @@ export async function encryptStats(stats: BankingStats, password: string): Promi
     });
     
     const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+    
+    // Properly handle the string encoding
     const encrypted = Buffer.concat([
-        cipher.update(JSON.stringify(stats), 'utf8'),
+        cipher.update(JSON.stringify(stats), 'utf8'), 
         cipher.final()
     ]);
     
-    return iv.toString('hex') + ':' + encrypted.toString('hex');
-}
-
-export async function decryptStats(encryptedData: string, password: string): Promise<BankingStats> {
-    const [ivHex, encryptedHex] = encryptedData.split(':');
-    if (!ivHex || !encryptedHex) {
-        throw new Error('Invalid encrypted data format');
-    }
-
-    const iv = Buffer.from(ivHex, 'hex');
-    const encrypted = Buffer.from(encryptedHex, 'hex');
-    const salt = 'salt';
+    // Combine IV and encrypted data as binary Buffer
+    const combined = Buffer.concat([iv, encrypted]);
     
-    const key = await new Promise<Buffer>((resolve, reject) => {
-        crypto.pbkdf2(password, salt, 100000, 32, 'sha256', (err, derivedKey) => {
-            if (err) return reject(err);
-            resolve(derivedKey);
-        });
-    });
-    
-    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-    const decrypted = Buffer.concat([
-        decipher.update(encrypted),
-        decipher.final()
-    ]);
-    
-    return JSON.parse(decrypted.toString('utf8'));
+    // Return as base64
+    return combined.toString('base64');
 }
