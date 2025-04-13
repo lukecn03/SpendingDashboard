@@ -362,7 +362,7 @@ async function main() {
         
         // Save to Firebase
         console.log('\x1b[32m%s\x1b[0m', '9. Saving to firebase');
-        // await saveToFirebase(encryptedData);
+        await saveToFirebase(encryptedData);
     } catch (error) {
         console.error('\x1b[31m%s\x1b[0m', 'Error:', error.message);
     } finally {
