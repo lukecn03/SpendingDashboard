@@ -166,7 +166,7 @@ async function checkSaverAccountBalance(token: string, amount: number): Promise<
 }
 
 async function transferFunds(token: string, amount: number): Promise<boolean> {
-    const url = new URL(`${API_BASE_URL}/za/pb/v1/accounts/${PRIME_SAVER_ID}/transfermultiple`);
+    const url = new URL(`${API_BASE_URL}/za/pb/v1/accounts/${PRIME_SAVER_ID}/paymultiple`);
 
     const transferList = [{
         beneficiaryAccountId: TRANSACTIONAL_ACCOUNT_ID,
@@ -332,7 +332,7 @@ async function main() {
         stats.dailyTransactions.pendingCount = pendingTransactions.length;
 
         // Handle overdraft
-        console.log('\x1b[32m%s\x1b[0m', '6. Checking account balance');
+        console.log('\x1b[32m%s\x1b[0m', '6. Checking account balance and transferring funds');
         const balance = await getTransactionalAccountBalance(token);
         stats.accountBalances.current = Math.ceil((Number(MONTHLY_BUDGET) - balance) * 100) / 100;
         if (stats.accountBalances.current > 0) {

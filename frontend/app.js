@@ -95,14 +95,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         authScreen.classList.remove('d-none');
         dashboard.classList.add('d-none');
         pinError.textContent = errorMessage;
-        
-        if (isMobile && biometricAvailable) {
-            setTimeout(() => {
-                authenticateWithBiometrics();
-            }, 500);
-        } else {
-            pinInput.focus();
-        }
+
+        pinInput.focus();
     };
 
     const tryLoadDashboard = async (pin) => {
