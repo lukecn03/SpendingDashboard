@@ -1,8 +1,8 @@
-name: Deploy to GitHub Pages
+name: Frontend refresh and deploy
 
 on:
-  push:
-    branches: ["main"]
+  schedule:
+    - cron: '0 21 * * *'  # 21:30 UTC (23:30 SAST)
   workflow_dispatch:
 
 permissions:

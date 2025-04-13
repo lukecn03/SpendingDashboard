@@ -7,12 +7,27 @@ let database;
 document.addEventListener('DOMContentLoaded', async () => {
     const authScreen = document.getElementById('auth-screen');
     const dashboard = document.getElementById('dashboard');
-    const passwordInput = document.getElementById('password-input');
+    const pinInput = document.getElementById('pin-input');
     const unlockBtn = document.getElementById('unlock-btn');
     const faceIdBtn = document.getElementById('face-id-btn');
-    const passwordError = document.createElement('div');
-    passwordError.className = 'text-danger mt-2';
-    passwordInput.parentNode.appendChild(passwordError);
+    const pinError = document.createElement('div');
+    pinError.className = 'text-danger mt-2';
+    pinInput.parentNode.appendChild(pinError);
+
+    // Force numeric input only
+    pinInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        
+        // Enable button only when 4 digits are entered
+        if (e.target.value.length === 4) {
+            unlockBtn.removeAttribute('disabled');
+        } else {
+            unlockBtn.setAttribute('disabled', 'disabled');
+        }
+    });
+
+    // Initially disable unlock button
+    unlockBtn.setAttribute('disabled', 'disabled');
 
     if (!process.env.FIREBASE_API_KEY || 
         !process.env.FIREBASE_DATABASE_URL || 
@@ -42,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    const envPassword = process.env.ENCRYPTION_PASSWORD;
+    const envPin = process.env.ENCRYPTION_PASSWORD;
     const monthlyBudget = process.env.MONTHLY_BUDGET;
     let encryptedStats = null;
 
@@ -63,49 +78,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     const showAuthScreen = (errorMessage = '') => {
         authScreen.classList.remove('d-none');
         dashboard.classList.add('d-none');
-        passwordError.textContent = errorMessage;
-        passwordInput.focus();
+        pinError.textContent = errorMessage;
+        pinInput.focus();
     };
 
-    const tryLoadDashboard = async (password) => {
+    const tryLoadDashboard = async (pin) => {
         try {
-            if (envPassword && password !== envPassword) {
-                throw new Error('Incorrect password');
+            if (envPin && pin !== envPin) {
+                throw new Error('Incorrect PIN');
             }
 
-            await loadDashboard(password);
+            await loadDashboard(pin);
             authScreen.classList.add('d-none');
             dashboard.classList.remove('d-none');
-            passwordError.textContent = '';
+            pinError.textContent = '';
         } catch (e) {
             console.error('Authentication failed:', e);
-            showAuthScreen('Invalid password. Please try again.');
+            showAuthScreen('Invalid PIN. Please try again.');
+            pinInput.value = '';
+            unlockBtn.setAttribute('disabled', 'disabled');
         }
     };
 
-    if (!envPassword) {
-        console.warn('No environment password set - showing auth screen');
+    if (!envPin) {
+        console.warn('No environment PIN set - showing auth screen');
         showAuthScreen();
     } else {
-        passwordInput.focus();
+        pinInput.focus();
     }
 
     unlockBtn.addEventListener('click', () => {
-        const password = passwordInput.value;
-        if (password) {
-            tryLoadDashboard(password);
+        const pin = pinInput.value;
+        if (pin && pin.length === 4 && /^\d{4}$/.test(pin)) {
+            tryLoadDashboard(pin);
         } else {
-            passwordError.textContent = 'Please enter a password';
+            pinError.textContent = 'Please enter a 4-digit PIN';
         }
     });
 
-    passwordInput.addEventListener('keypress', (e) => {
+    pinInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            const password = passwordInput.value;
-            if (password) {
-                tryLoadDashboard(password);
+            const pin = pinInput.value;
+            if (pin && pin.length === 4 && /^\d{4}$/.test(pin)) {
+                tryLoadDashboard(pin);
             } else {
-                passwordError.textContent = 'Please enter a password';
+                pinError.textContent = 'Please enter a 4-digit PIN';
             }
         }
     });
@@ -120,21 +137,49 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
             
-            const storedPassword = sessionStorage.getItem('dashboard_password');
-            if (storedPassword) {
-                tryLoadDashboard(storedPassword);
+            const storedPin = sessionStorage.getItem('dashboard_pin');
+            if (storedPin) {
+                tryLoadDashboard(storedPin);
             } else {
-                const password = prompt('Please enter your backup password to set up Face ID');
-                if (password) {
-                    sessionStorage.setItem('dashboard_password', password);
-                    tryLoadDashboard(password);
+                const pin = prompt('Please enter your 4-digit backup PIN to set up Face ID');
+                if (pin && pin.length === 4 && /^\d{4}$/.test(pin)) {
+                    sessionStorage.setItem('dashboard_pin', pin);
+                    tryLoadDashboard(pin);
+                } else {
+                    showAuthScreen('Please enter a valid 4-digit PIN');
                 }
             }
         } catch (e) {
             console.error('Authentication failed:', e);
-            showAuthScreen('Face ID authentication failed. Please use password.');
+            showAuthScreen('Face ID authentication failed. Please use your PIN.');
         }
     });
+
+    async function loadDashboard(pin) {
+        try {
+            try {
+                const snapshot = await get(ref(database, 'stats'));
+                if (snapshot.exists()) {
+                    encryptedStats = snapshot.val().data;
+                } else {
+                    console.error('No data available in Firebase');
+                }
+            } catch (error) {
+                console.error('Error fetching data from Firebase:', error);
+            }
+
+            if (!encryptedStats) {
+                throw new Error('No encrypted data available');
+            }
+            
+            const stats = await decryptStats(encryptedStats, pin);
+            displayStats(stats);
+            return true;
+        } catch (e) {
+            console.error('Error:', e);
+            throw new Error('Failed to load dashboard data');
+        }
+    }
 
     async function loadDashboard(password) {
         try {

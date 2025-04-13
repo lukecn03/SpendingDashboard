@@ -14,7 +14,13 @@
         <div id="auth-screen" class="text-center mt-5">
             <h1 class="mb-4">Spending Dashboard</h1>
             <div class="card p-4" style="max-width: 400px; margin: 0 auto;">
-                <input type="password" id="password-input" class="form-control mb-3" placeholder="Enter passcode">
+                <input type="tel" 
+                       id="pin-input" 
+                       class="form-control mb-3 text-center fs-4" 
+                       placeholder="Enter 4-digit PIN"
+                       pattern="[0-9]{4}"
+                       maxlength="4"
+                       inputmode="numeric">
                 <button id="unlock-btn" class="btn btn-primary w-100 mb-3">Unlock</button>
                 <button id="face-id-btn" class="btn btn-outline-light w-100">
                     <i class="bi bi-faceid"></i> Use Face ID

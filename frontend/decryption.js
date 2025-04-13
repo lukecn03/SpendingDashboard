@@ -46,6 +46,6 @@ export async function decryptStats(base64Data, password) {
         return JSON.parse(new TextDecoder().decode(decrypted));
     } catch (error) {
         console.error('Decryption failed:', error);
-        throw new Error('Failed to decrypt data - corrupted data');
+        throw new Error('Failed to decrypt data - Password used to encrypt differs from password used to decrypt or corrupted data');
     }
 }
