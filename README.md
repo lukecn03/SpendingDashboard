@@ -55,7 +55,7 @@ To use this application, you'll need Investec Programmable Banking API credentia
 ## Monorepo Structure
 
 ```
-interest-preventer/
+SpendingDashboard/
 ├── backend/              # Automation service
 │   ├── src/              # TypeScript source files
 │   ├── package.json      # Backend dependencies
@@ -83,8 +83,8 @@ interest-preventer/
 ### 2. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/interest-preventer.git
-cd interest-preventer
+git clone https://github.com/lukecn03/SpendingDashboard.git
+cd SpendingDashboard
 ```
 
 ### 3. Environment Setup
