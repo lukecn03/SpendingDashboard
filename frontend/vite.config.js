@@ -3,10 +3,10 @@ import { resolve } from 'path';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  
+
   
   return {
-    base: mode === 'production' ? '/SpendingDashboard/frontend/dist/' : '/',
+    base: mode === 'production' ? '/SpendingDashboard/' : '/',
     build: {
       outDir: 'dist',
       assetsDir: 'assets',
