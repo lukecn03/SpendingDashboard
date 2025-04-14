@@ -4,6 +4,9 @@ import { getDatabase, ref, get } from 'firebase/database';
 
 let database;
 
+const BIOMETRIC_STORAGE_KEY = 'biometric_auth';
+const envSalt = process.env.FIREBASE_PROJECT_ID;
+
 document.addEventListener('DOMContentLoaded', async () => {
     const authScreen = document.getElementById('auth-screen');
     const dashboard = document.getElementById('dashboard');
@@ -65,6 +68,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         banner.innerHTML = '<strong>DEMO MODE</strong> - Showing sample data. Enter your PIN to view real data.';
         dashboard.prepend(banner);
     });
+
+    const encryptForStorage = (data) => {
+        try {
+            let result = '';
+            const salt = envSalt + envSalt; 
+            for (let i = 0; i < data.length; i++) {
+                const charCode = data.charCodeAt(i) ^ salt.charCodeAt(i % salt.length);
+                result += String.fromCharCode(charCode);
+            }
+            return btoa(result);
+        } catch (e) {
+            console.error('Encryption failed:', e);
+            return null;
+        }
+    };
+
+    const decryptFromStorage = (encryptedData) => {
+        try {
+            const decoded = atob(encryptedData);
+            let result = '';
+            const salt = envSalt + envSalt;
+            for (let i = 0; i < decoded.length; i++) {
+                const charCode = decoded.charCodeAt(i) ^ salt.charCodeAt(i % salt.length);
+                result += String.fromCharCode(charCode);
+            }
+            return result;
+        } catch (e) {
+            console.error('Decryption failed:', e);
+            return null;
+        }
+    };
 
     pinInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
@@ -172,8 +206,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     showAuthScreen();
 
+    const isBiometricRegistered = () => {
+        const stored = localStorage.getItem(BIOMETRIC_STORAGE_KEY);
+        if (!stored) return false;
+        
+        const decrypted = decryptFromStorage(stored);
+        return decrypted === 'registered';
+    };
+
+    const setBiometricRegistered = () => {
+        const encrypted = encryptForStorage('registered');
+        if (encrypted) {
+            localStorage.setItem(BIOMETRIC_STORAGE_KEY, encrypted);
+        }
+    };
+
     async function authenticateWithBiometrics() {
         try {
+            const storedPinValid = sessionStorage.getItem('pin_validated');
+            
+            if (isBiometricRegistered() && !storedPinValid) {
+                const pin = prompt('Please enter your PIN to use biometric authentication');
+                if (!pin || pin !== envPin) {
+                    throw new Error('PIN required for biometric authentication');
+                }
+                sessionStorage.setItem('pin_validated', 'true');
+            }
+
             const credential = await navigator.credentials.get({
                 publicKey: {
                     challenge: new Uint8Array(32),
@@ -182,48 +241,56 @@ document.addEventListener('DOMContentLoaded', async () => {
                     timeout: 60000
                 }
             });
-    
-            console.log('Biometric login successful');
-            tryLoadDashboard(envPin);
-    
-        } catch (authError) {
-            console.warn('Authentication failed or not registered:', authError);
-    
-            if (authError.name === 'NotAllowedError' || authError.name === 'InvalidStateError') {
-                try {
-                    const userId = new Uint8Array(16);
-                    crypto.getRandomValues(userId);
-    
-                    const newCredential = await navigator.credentials.create({
-                        publicKey: {
-                            challenge: new Uint8Array(32),
-                            rp: {
-                                name: "Secure Dashboard"
-                            },
-                            user: {
-                                id: userId,
-                                name: "user@secure.com",
-                                displayName: "Secure User"
-                            },
-                            pubKeyCredParams: [{ alg: -7, type: "public-key" }],
-                            authenticatorSelection: {
-                                authenticatorAttachment: "platform",
-                                userVerification: "required"
-                            },
-                            timeout: 60000
-                        }
-                    });
-    
-                    console.log('User registered via biometrics:', newCredential);
-                    tryLoadDashboard(envPin);
-                } catch (registerError) {
-                    console.error('Biometric registration failed:', registerError);
-                    showAuthScreen('Biometric registration failed. Please use your PIN.');
+
+            if (!isBiometricRegistered()) {
+                const pin = prompt('Please enter your PIN to register biometric authentication');
+                if (!pin || pin !== envPin) {
+                    throw new Error('Valid PIN required to register biometric authentication');
                 }
-            } else {
-                console.error('Biometric auth error:', authError);
-                showAuthScreen('Biometric authentication failed. Please use your PIN.');
+                
+                const userId = new Uint8Array(16);
+                crypto.getRandomValues(userId);
+
+                await navigator.credentials.create({
+                    publicKey: {
+                        challenge: new Uint8Array(32),
+                        rp: {
+                            name: "Secure Dashboard",
+                            id: window.location.hostname
+                        },
+                        user: {
+                            id: userId,
+                            name: "user@secure.com",
+                            displayName: "Secure User"
+                        },
+                        pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+                        authenticatorSelection: {
+                            authenticatorAttachment: "platform",
+                            userVerification: "required"
+                        },
+                        timeout: 60000
+                    }
+                });
+
+                setBiometricRegistered();
+                sessionStorage.setItem('pin_validated', 'true');
             }
+
+            console.log('Biometric authentication successful');
+            tryLoadDashboard(envPin);
+
+        } catch (authError) {
+            console.error('Biometric authentication failed:', authError);
+            let errorMessage = 'Biometric authentication failed';
+            
+            if (authError.message.includes('PIN')) {
+                errorMessage = authError.message;
+            } else if (authError.name === 'NotAllowedError') {
+                errorMessage = 'Authentication cancelled by user';
+            }
+            
+            showAuthScreen(errorMessage);
+            pinInput.focus();
         }
     }
     
@@ -307,7 +374,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('card-spending').textContent = formatCurrency(stats.spending.totalCardSpent);
         
         const cardBudget = stats.accountBalances.monthlyBudget;
-        const cardSpent = stats.spending.totalCardSpent || 0;
+        const cardSpent = stats.spending.totalCardSpent;
         const remainingBudget = cardBudget - cardSpent;
         
         document.getElementById('card-spent').textContent = formatCurrency(cardSpent);
