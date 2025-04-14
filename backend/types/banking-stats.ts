@@ -3,6 +3,7 @@ export type BankingStats = {
   accountBalances: {
       current: number;
       overdraftAmount: number;
+      monthlyBudget: number;
   };
   salaryInfo: {
       lastSalaryDate: string;
@@ -32,11 +33,13 @@ export type BankingStats = {
 
 export function initBankingStats(): BankingStats {
   const now = new Date().toISOString();
+  const MONTHLY_BUDGET = Number(process.env.MONTHLY_BUDGET!);
   return {
       lastUpdated: now,
       accountBalances: {
           current: 0,
           overdraftAmount: 0,
+          monthlyBudget: MONTHLY_BUDGET
       },
       salaryInfo: {
           lastSalaryDate: '',

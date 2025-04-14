@@ -14,6 +14,58 @@ document.addEventListener('DOMContentLoaded', async () => {
     pinError.className = 'text-danger mt-2';
     pinInput.parentNode.appendChild(pinError);
 
+    document.getElementById('demo-btn').addEventListener('click', () => {
+        const demoData = {
+            "lastUpdated": new Date().toISOString(),
+            "accountBalances": {
+              "current": 450.10,
+              "overdraftAmount": 5000,
+              "monthlyBudget": 12000
+            },
+            "salaryInfo": {
+              "lastSalaryDate": "2025-03-25"
+            },
+            "dailyTransactions": {
+              "count": 4,
+              "debitCount": 3,
+              "creditCount": 1,
+              "pendingCount": 1
+            },
+            "spending": {
+              "byCategory": { // the amounts in exclusion is not included here
+                "CardPurchases": 6650.23,
+                "VASTransactions": 540.20,
+                "FeesAndInterest": 110.50,
+                "OnlineBankingPayments": 220.00
+              },
+              "monthly": {
+                "total": 38264.72,
+                "discretionary": 8021.13, // Sum of categories + pending
+                "nonDiscretionary": 30243.59, // Sum of exclusion
+                "byExclusion": { // Created based on description of the payment
+                  "RENT": 12320.53,
+                  "Car INSURANCE": 1200,
+                  "SCHOOL FEES": 4101.98,
+                  "CAR PAYMENT": 6010.21,
+                  "MEDICAL AID": 3610.87,
+                  "TAX FREE SAVINGS": 3000
+                },
+                "pendingTransactionsTotal": 500.20
+              },
+              "totalCardSpent": 7150.43
+            }
+          };
+        
+        displayStats(demoData);
+        authScreen.classList.add('d-none');
+        dashboard.classList.remove('d-none');
+        
+        const banner = document.createElement('div');
+        banner.className = 'alert alert-info text-center mb-4';
+        banner.innerHTML = '<strong>DEMO MODE</strong> - Showing sample data. Enter your PIN to view real data.';
+        dashboard.prepend(banner);
+    });
+
     pinInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
         
@@ -224,8 +276,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
     function displayStats(stats) {
-        const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString();
         const formatCurrency = (amount) => new Intl.NumberFormat('en-ZA', {
             style: 'currency',
             currency: 'ZAR'
@@ -235,6 +294,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('current-balance').textContent = formatCurrency(stats.accountBalances.current);
         
         document.getElementById('last-salary-date').textContent = formatDate(stats.salaryInfo.lastSalaryDate);
+
         
         document.getElementById('daily-debits').textContent = stats.dailyTransactions.debitCount;
         document.getElementById('daily-credits').textContent = stats.dailyTransactions.creditCount;
@@ -246,7 +306,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('pending-transactions').textContent = formatCurrency(stats.spending.monthly.pendingTransactionsTotal);
         document.getElementById('card-spending').textContent = formatCurrency(stats.spending.totalCardSpent);
         
-        const cardBudget = Number(monthlyBudget);
+        const cardBudget = stats.accountBalances.monthlyBudget;
         const cardSpent = stats.spending.totalCardSpent || 0;
         const remainingBudget = cardBudget - cardSpent;
         

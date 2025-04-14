@@ -2,7 +2,6 @@ import fetch from 'node-fetch';
 import * as dotenv from 'dotenv';
 import { BankingStats, initBankingStats } from './types/banking-stats.js';
 import { encryptStats } from './utils/encryption.js';
-import * as fs from 'fs';
 import admin from 'firebase-admin';
 const { credential } = admin;
 
@@ -20,7 +19,6 @@ const PROFILE_ID = process.env.PROFILE_ID!;
 const ENCRYPTION_PASSWORD = process.env.ENCRYPTION_PASSWORD!;
 const FIREBASE_SERVICE_ACCOUNT = process.env.FIREBASE_SERVICE_ACCOUNT!;
 const DATABASE_URL = process.env.DATABASE_URL!;
-const MONTHLY_BUDGET = process.env.MONTHLY_BUDGET!;
 const SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION = process.env.SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION!;
 
 const salaryDescription = process.env.SALARY_DESCRIPTION!;
@@ -267,6 +265,8 @@ async function calculateSpending(transactions: Transaction[], pendingTransaction
     stats.spending.monthly.pendingTransactionsTotal = pendingTotal;
     stats.spending.totalCardSpent = stats.spending.byCategory["CardPurchases"] + stats.spending.monthly.pendingTransactionsTotal;
 
+    stats.spending.monthly.total += stats.spending.monthly.pendingTransactionsTotal;
+
     stats.spending.monthly.total = parseFloat(stats.spending.monthly.total.toFixed(2));
     stats.spending.monthly.discretionary = parseFloat(stats.spending.monthly.discretionary.toFixed(2));
     stats.spending.monthly.nonDiscretionary = parseFloat(stats.spending.monthly.nonDiscretionary.toFixed(2));
@@ -339,7 +339,7 @@ async function main() {
         // Handle overdraft
         console.log('\x1b[32m%s\x1b[0m', '6. Checking account balance and transferring funds');
         const balance = await getTransactionalAccountBalance(token);
-        stats.accountBalances.current = Math.ceil((Number(MONTHLY_BUDGET) - balance) * 100) / 100;
+        stats.accountBalances.current = Math.ceil((Number(stats.accountBalances.monthlyBudget) - balance) * 100) / 100;
         if (stats.accountBalances.current > 0) {
             stats.accountBalances.overdraftAmount = Math.abs(stats.accountBalances.current);
             await transferFunds(token, stats.accountBalances.overdraftAmount);
