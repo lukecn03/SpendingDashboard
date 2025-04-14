@@ -22,7 +22,7 @@ const DATABASE_URL = process.env.DATABASE_URL!;
 const SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION = process.env.SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION!;
 const MONTHLY_BUDGET = Number(process.env.MONTHLY_BUDGET!);
 
-console.log(process.env.MONTHLY_BUDGET!);
+console.log(process.env.MONTHLY_BUDGET);
 
 const salaryDescription = process.env.SALARY_DESCRIPTION!;
 let exclusionKeywords: string[] = [];
