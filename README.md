@@ -74,7 +74,36 @@ This helps users see which areas they spend most on.
 
 ---
 
+## 🤝 How to Contribute
 
+Contributions are welcome and appreciated! Whether it's a bug fix, feature enhancement, or documentation improvement, here’s how you can get involved:
+
+### 🛠 Steps to Contribute
+
+1. **Fork the Repository**  
+   Click the **Fork** button on the top right of the [GitHub repo](https://github.com/lukecn03/SpendingDashboard.git) to create your own copy.
+
+2. **Clone Your Fork**  
+
+
+3. **Create a Feature Branch**  
+
+
+4. **Make Your Changes**  
+   - Stick to existing code style
+   - Test your changes thoroughly
+
+5. **Commit and Push**  
+   ```bash
+   git add .
+   git commit -m "Add: meaningful message about what you did"
+   git push origin feature/your-feature-name
+   ```
+
+6. **Open a Pull Request (PR)**  
+   Go to your fork on GitHub and open a PR to the `main` branch of this original repository.
+
+---
 
 ## API Access Requirements
 
