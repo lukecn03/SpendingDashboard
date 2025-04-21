@@ -14,25 +14,6 @@ const PRIME_SAVER_ID = process.env.PRIME_SAVER_ACCOUNT_ID!;
 const PROFILE_ID = process.env.PROFILE_ID!;
 const MONTHLY_BUDGET = Number(process.env.MONTHLY_BUDGET!);
 
-interface Transaction {
-    accountId: string;
-    type: string;
-    transactionType: string;
-    status: string;
-    description: string;
-    cardNumber: string;
-    postedOrder: number;
-    postingDate: string;
-    valueDate: string;
-    actionDate: string;
-    transactionDate: string;
-    amount: number;
-    runningBalance: number;
-    uuid: string;
-}
-
-
-
 
 async function getBearerToken(): Promise<string> {
     const url = `${API_BASE_URL}/identity/v2/oauth2/token`;

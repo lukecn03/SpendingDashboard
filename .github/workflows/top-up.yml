@@ -38,4 +38,4 @@ jobs:
           PRIME_SAVER_ACCOUNT_ID: ${{ secrets.PRIME_SAVER_ACCOUNT_ID }}
           PROFILE_ID: ${{ secrets.PROFILE_ID }}
           MONTHLY_BUDGET: ${{ secrets.MONTHLY_BUDGET }}
-        run: npm start:topup
+        run: npm run start:topup
