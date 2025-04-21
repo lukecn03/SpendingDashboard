@@ -226,3 +226,51 @@ h1, h2, h3, h4, h5, h6 {
 .card-body > div:last-child {
     border-bottom: none;
 }
+.chart-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+@media (min-width: 768px) {
+    .chart-wrapper {
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .chart-container {
+        flex: 0 0 60%;
+    }
+    
+    .legend-container {
+        flex: 1;
+    }
+}
+
+.legend-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 10px; /* Space for scrollbar */
+}
+
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    min-width: fit-content;
+    padding: 5px;
+}
+
+.chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.chart-legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}

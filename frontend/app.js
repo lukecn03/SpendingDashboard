@@ -400,6 +400,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderSpendingChart(stats) {
         const ctx = document.getElementById('spending-chart').getContext('2d');
+        const legendContainer = document.getElementById('chart-legend');
         
         const lightestSlate = getComputedStyle(document.documentElement)
             .getPropertyValue('--lightest-slate').trim();
@@ -439,7 +440,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }]
         };
         
-        new Chart(ctx, {
+        const chart = new Chart(ctx, {
             type: 'doughnut',
             data: chartData,
             options: {
@@ -447,14 +448,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'right',
-                        labels: {
-                            color: lightestSlate, 
-                            font: {
-                                size: 12
-                            },
-                            padding: 20
-                        }
+                        display: false // We'll use our custom legend
                     },
                     tooltip: {
                         callbacks: {
@@ -472,6 +466,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 },
                 cutout: '60%'
             }
+        });
+        
+        // Generate custom legend
+        legendContainer.innerHTML = '';
+        chart.data.datasets.forEach((dataset, i) => {
+            dataset.data.forEach((value, j) => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'chart-legend-item';
+                
+                const colorBox = document.createElement('div');
+                colorBox.className = 'chart-legend-color';
+                colorBox.style.backgroundColor = dataset.backgroundColor[j];
+                
+                const labelText = document.createElement('span');
+                labelText.textContent = `${chart.data.labels[j]}: ${new Intl.NumberFormat('en-ZA', {
+                    style: 'currency',
+                    currency: 'ZAR'
+                }).format(value)}`;
+                
+                legendItem.appendChild(colorBox);
+                legendItem.appendChild(labelText);
+                legendContainer.appendChild(legendItem);
+            });
         });
     }
   
