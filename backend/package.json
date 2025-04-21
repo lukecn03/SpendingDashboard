@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "build:topup": "tsc --project tsconfig.json",
-    "start:topup": "npm run build && node bin/top-up.js",
-    "dev:topup": "cross-env testing=true npm run build && cross-env testing=true node bin/top-up.js",
+    "start:topup": "npm run build:topup && node bin/top-up.js",
+    "dev:topup": "cross-env testing=true npm run build:topup && cross-env testing=true node bin/top-up.js",
     "build:update": "tsc",
     "start:update": "npm run build:update && node bin/update.js",
     "dev:update": "cross-env testing=true npm run build:update && cross-env testing=true node bin/update.js"

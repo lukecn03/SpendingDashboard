@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const demoData = {
             "lastUpdated": new Date().toISOString(),
             "accountBalances": {
-              "current": 450.10,
+              "current": 4450.10,
               "overdraftAmount": 5000,
               "monthlyBudget": 12000
             },
