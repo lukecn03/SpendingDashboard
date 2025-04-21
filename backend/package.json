@@ -6,8 +6,11 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "build:topup": "tsc --project tsconfig.json",
     "start": "npm run build && node bin/main.js",
-    "dev": "cross-env testing=true npm run build && cross-env testing=true node bin/main.js"
+    "start:topup": "npm run build && node bin/top-up.js",
+    "dev": "cross-env testing=true npm run build && cross-env testing=true node bin/main.js",
+    "dev:topup": "cross-env testing=true npm run build && cross-env testing=true node bin/top-up.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
