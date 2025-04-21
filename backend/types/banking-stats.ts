@@ -2,7 +2,6 @@ export type BankingStats = {
   lastUpdated: string;
   accountBalances: {
       current: number;
-      overdraftAmount: number;
       monthlyBudget: number;
   };
   salaryInfo: {
@@ -37,7 +36,6 @@ export function initBankingStats(): BankingStats {
       lastUpdated: now,
       accountBalances: {
           current: 0,
-          overdraftAmount: 0,
           monthlyBudget: 0,
       },
       salaryInfo: {

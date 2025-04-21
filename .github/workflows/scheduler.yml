@@ -50,4 +50,4 @@ jobs:
           SALARY_DESCRIPTION: ${{ secrets.SALARY_DESCRIPTION }}
           SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION: ${{ secrets.SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION }}
           MONTHLY_BUDGET: ${{ secrets.MONTHLY_BUDGET }}
-        run: npm start
+        run: npm run start:update

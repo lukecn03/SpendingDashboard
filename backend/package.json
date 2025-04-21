@@ -2,15 +2,15 @@
   "name": "interest-preventer-backend",
   "version": "1.0.0",
   "description": "Backend for Interest Preventer application",
-  "main": "bin/main.js",
+  "main": "bin/update.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
     "build:topup": "tsc --project tsconfig.json",
-    "start": "npm run build && node bin/main.js",
     "start:topup": "npm run build && node bin/top-up.js",
-    "dev": "cross-env testing=true npm run build && cross-env testing=true node bin/main.js",
-    "dev:topup": "cross-env testing=true npm run build && cross-env testing=true node bin/top-up.js"
+    "dev:topup": "cross-env testing=true npm run build && cross-env testing=true node bin/top-up.js",
+    "build:update": "tsc",
+    "start:update": "npm run build:update && node bin/update.js",
+    "dev:update": "cross-env testing=true npm run build:update && cross-env testing=true node bin/update.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",

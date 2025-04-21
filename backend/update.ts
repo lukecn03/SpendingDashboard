@@ -14,8 +14,6 @@ const API_KEY = process.env.INVESTEC_API_KEY!;
 const CLIENT_ID = process.env.INVESTEC_CLIENT_ID!;
 const CLIENT_SECRET = process.env.INVESTEC_CLIENT_SECRET!;
 const TRANSACTIONAL_ACCOUNT_ID = process.env.TRANSACTIONAL_ACCOUNT_ID!;
-const PRIME_SAVER_ID = process.env.PRIME_SAVER_ACCOUNT_ID!;
-const PROFILE_ID = process.env.PROFILE_ID!;
 const ENCRYPTION_PASSWORD = process.env.ENCRYPTION_PASSWORD!;
 const FIREBASE_SERVICE_ACCOUNT = process.env.FIREBASE_SERVICE_ACCOUNT!;
 const DATABASE_URL = process.env.DATABASE_URL!;
@@ -148,63 +146,6 @@ async function getTransactionalAccountBalance(token: string): Promise<number> {
     }
 }
 
-async function checkSaverAccountBalance(token: string, amount: number): Promise<boolean> {
-    const url = `${API_BASE_URL}/za/pb/v1/accounts/${PRIME_SAVER_ID}/balance`;
-
-    const headers = {
-        Authorization: `Bearer ${token}`,
-    };
-
-    try {
-        const response = await fetch(url, { headers });
-        const data: any = await response.json();
-        const availableBalance = data.data.availableBalance;
-        return availableBalance >= amount;
-    } catch (error) {
-        console.error('\x1b[31m%s\x1b[0m', 'Error fetching saver account balance:', error.message);
-        return false;
-    }
-}
-
-async function transferFunds(token: string, amount: number): Promise<boolean> {
-    const url = new URL(`${API_BASE_URL}/za/pb/v1/accounts/${PRIME_SAVER_ID}/transfermultiple`);
-
-    const transferList = [{
-        beneficiaryAccountId: TRANSACTIONAL_ACCOUNT_ID,
-        amount,
-        myReference: 'SCRIPT - Top-up',
-        theirReference: 'SCRIPT - Top-up'
-    }];
-
-    const payload = {
-        transferList,
-        profileId: `${PROFILE_ID}`
-    };
-
-    const headers = {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-    };
-
-    try {
-        if (testing) {
-            console.log(`FAKE PAID R${amount}`);
-        } else {
-            const response = await fetch(url.toString(), {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(payload),
-            });
-            const data: any = await response.json();
-            console.log('\x1b[32m%s\x1b[0m', JSON.stringify(data.data, null, 2));
-        }
-        return true;
-    } catch (error) {
-        console.error('\x1b[31m%s\x1b[0m', 'Transfer error:', error.message);
-        return false;
-    }
-}
-
 async function getPendingTransactions(token: string): Promise<Transaction[]> {
     const url = `${API_BASE_URL}/za/pb/v1/accounts/${TRANSACTIONAL_ACCOUNT_ID}/pending-transactions`;
     const headers = {
@@ -284,7 +225,6 @@ async function calculateSpending(transactions: Transaction[], pendingTransaction
     }
 }
 
-
 async function saveToFirebase(encryptedData: string) {
     try {
         const db = admin.database();
@@ -305,8 +245,11 @@ async function main() {
         const stats: BankingStats = initBankingStats();
         stats.accountBalances.monthlyBudget = MONTHLY_BUDGET;
 
-        console.log('\x1b[32m%s\x1b[0m', '1. Initializing firebase');
-        setupFirebase();
+        console.log(`\x1b[32m1. Initializing firebase : ${String(!testing)}\x1b[0m`);
+
+        if (!testing){
+            setupFirebase();
+        }
 
         // Fetch Bearer Token
         console.log('\x1b[32m%s\x1b[0m', '2. Fetching bearer token');
@@ -340,13 +283,8 @@ async function main() {
         stats.dailyTransactions.pendingCount = pendingTransactions.length;
 
         // Handle overdraft
-        console.log('\x1b[32m%s\x1b[0m', '6. Checking account balance and transferring funds');
-        const balance = await getTransactionalAccountBalance(token);
-        stats.accountBalances.current = Math.ceil((Number(stats.accountBalances.monthlyBudget) - balance) * 100) / 100;
-        if (stats.accountBalances.current > 0) {
-            stats.accountBalances.overdraftAmount = Math.abs(stats.accountBalances.current);
-            await transferFunds(token, stats.accountBalances.overdraftAmount);
-        }
+        console.log('\x1b[32m%s\x1b[0m', '6. Checking account balance');
+        stats.accountBalances.current = await getTransactionalAccountBalance(token);
 
         // Fetch transactions for the last month from the salary date
         console.log('\x1b[32m%s\x1b[0m', '7. Fetching transactions from salary date to today');
@@ -364,13 +302,17 @@ async function main() {
         const encryptedData = await encryptStats(stats, ENCRYPTION_PASSWORD);
         
         // Save to Firebase
-        console.log('\x1b[32m%s\x1b[0m', '9. Saving to firebase');
-        await saveToFirebase(encryptedData);
+        console.log(`\x1b[32m9. Saving to firebase : ${String(!testing)}\x1b[0m`);
+        if (!testing){
+            await saveToFirebase(encryptedData);
+        }
     } catch (error) {
         console.error('\x1b[31m%s\x1b[0m', 'Error:', error.message);
     } finally {
         console.log('\x1b[32m%s\x1b[0m', '10. Cleaning up workspace');
-        await admin.app().delete();
+        if (!testing){
+            await admin.app().delete();
+        }
         console.log('\x1b[32m%s\x1b[0m', '\nSUCCESSFUL\n');
         process.exit(0);
     }

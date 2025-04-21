@@ -3,9 +3,13 @@
     "version": "1.0.0",
     "description": "A full-stack application for banking operations",
     "scripts": {
-      "backend": "cd backend && npm run start",
-      "backend:build": "cd backend && npm run build",
-      "backend:dev": "cd backend && npm run dev",
+      "backend:update": "cd backend && npm run start:update",
+      "backend:build:update": "cd backend && npm run build:update",
+      "backend:dev:update": "cd backend && npm run dev:update",
+
+      "backend:topup": "cd backend && npm run start:topup",
+      "backend:build:topup": "cd backend && npm run build:topup",
+      "backend:dev:topup": "cd backend && npm run dev:topup",
       
       "frontend": "cd frontend && npm run dev",
       "frontend:preview": "cd frontend && npm run preview",
