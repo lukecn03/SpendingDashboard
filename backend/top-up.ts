@@ -95,20 +95,13 @@ async function transferFunds(token: string, amount: number): Promise<boolean> {
         if (testing) {
             console.log(`FAKE PAID R${amount}`);
         } else {
-            // const response = await fetch(url.toString(), {
-            //     method: 'POST',
-            //     headers,
-            //     body: JSON.stringify(payload),
-            // });
-            // const data: any = await response.json();
-            // console.log('\x1b[32m%s\x1b[0m', JSON.stringify(data.data, null, 2));
-            console.log('\x1b[36m%s\x1b[0m', 'Making POST request:', {
-                url: url.toString(),
+            const response = await fetch(url.toString(), {
                 method: 'POST',
-                headers: headers,
-                body: JSON.stringify(payload, null, 2)
+                headers,
+                body: JSON.stringify(payload),
             });
-
+            const data: any = await response.json();
+            console.log('\x1b[32m%s\x1b[0m', JSON.stringify(data.data, null, 2));
         }
         return true;
     } catch (error) {
