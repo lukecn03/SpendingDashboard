@@ -288,15 +288,17 @@ async function main() {
 
         // Fetch transactions for the last month from the salary date
         console.log('\x1b[32m%s\x1b[0m', '7. Fetching transactions from salary date to today');
-        const monthlyTransactions = await getTransactions(token, stats.salaryInfo.lastSalaryDate, formattedDate);
+        const monthlyTransactions = (await getTransactions(token, stats.salaryInfo.lastSalaryDate, formattedDate))
+            .filter(t => new Date(t.transactionDate) >= new Date(stats.salaryInfo.lastSalaryDate));
 
         // Calculate spending for the last month including pending transactions
         console.log('\x1b[32m%s\x1b[0m', '8. Calculating spending for the last month');
         await calculateSpending(monthlyTransactions, pendingTransactions, stats);
 
-        // Print the final stats, uncomment for testing
-        // console.log('\nFINAL BANKING STATISTICS:');
-        // console.log(JSON.stringify(stats, null, 2));
+        if (testing){
+            console.log('\nFINAL BANKING STATISTICS:');
+            console.log(JSON.stringify(stats, null, 2));
+        }
 
         if (!ENCRYPTION_PASSWORD) throw new Error('ENCRYPTION_PASSWORD not set');
         const encryptedData = await encryptStats(stats, ENCRYPTION_PASSWORD);
