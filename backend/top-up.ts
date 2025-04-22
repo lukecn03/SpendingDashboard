@@ -101,7 +101,7 @@ async function transferFunds(token: string, amount: number): Promise<boolean> {
                 body: JSON.stringify(payload),
             });
             const data: any = await response.json();
-            console.log('\x1b[32m%s\x1b[0m', JSON.stringify(data.data, null, 2));
+            console.log('\x1b[32m%s\x1b[0m', JSON.stringify(data, null, 2));
         }
         return true;
     } catch (error) {
@@ -125,7 +125,7 @@ async function main() {
 
         console.log('\x1b[32m%s\x1b[0m', '3. Checking savings account balance and transferring funds');
         if (await checkSaverAccountBalance(token, transferAmount)){
-            transferFunds(token, transferAmount);
+            await transferFunds(token, transferAmount);
         }
 
     } catch (error) {
