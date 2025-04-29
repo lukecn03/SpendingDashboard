@@ -121,7 +121,8 @@ async function main() {
 
         console.log('\x1b[32m%s\x1b[0m', '2. Checking transactional account balance');
         const balance = await getTransactionalAccountBalance(token);
-        const transferAmount = MONTHLY_BUDGET - balance;
+        let transferAmount = MONTHLY_BUDGET - balance;
+        transferAmount = Math.round(transferAmount * 100) / 100; // Rounds to 2 decimal places
 
         console.log('\x1b[32m%s\x1b[0m', '3. Checking savings account balance and transferring funds');
         if (await checkSaverAccountBalance(token, transferAmount)){
