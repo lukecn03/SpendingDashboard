@@ -238,6 +238,94 @@ async function saveToFirebase(encryptedData: string) {
     }
 }
 
+function removeMatchingDebitCreditPairs(transactions: Transaction[]): Transaction[] {
+    console.log('\x1b[36m%s\x1b[0m', `\nTotal transactions: ${transactions.length}`);
+    
+    // Separate transactions into different types
+    const debits = transactions.filter(t => t.type === 'DEBIT');
+    const credits = transactions.filter(t => t.type === 'CREDIT');
+    const others = transactions.filter(t => t.type !== 'DEBIT' && t.type !== 'CREDIT');
+
+    console.log('\x1b[36m%s\x1b[0m', `Debits: ${debits.length}, Credits: ${credits.length}, Others: ${others.length}`);
+
+    // Create a map to track credits by their amount (rounded to 2 decimals)
+    // Exclude credits that are in exclusion categories OR are script top-ups
+    const creditMap = new Map<number, Transaction[]>();
+    credits.forEach(credit => {
+        const isExcluded = exclusionKeywords.some(keyword => 
+            credit.description.includes(keyword)
+        );
+        const isScriptTopUp = credit.description.includes("SCRIPT - TOP-UP");
+        if (!isExcluded && !isScriptTopUp) {
+            const amount = parseFloat(credit.amount.toFixed(2));
+            if (!creditMap.has(amount)) {
+                creditMap.set(amount, []);
+            }
+            creditMap.get(amount)!.push(credit);
+        }
+    });
+
+    // Process debits to find matches
+    const filteredDebits: Transaction[] = [];
+    const usedCredits = new Set<string>(); // Track which credits we've already matched
+    const removedPairs: {debit: Transaction, credit: Transaction}[] = [];
+    
+    debits.forEach(debit => {
+        // Skip if this debit is in exclusion categories
+        const isExcluded = exclusionKeywords.some(keyword => 
+            debit.description.includes(keyword)
+        );
+        if (isExcluded) {
+            filteredDebits.push(debit);
+            return;
+        }
+
+        const debitAmount = parseFloat(debit.amount.toFixed(2));
+        const matchingCredits = creditMap.get(debitAmount);
+
+        if (matchingCredits && matchingCredits.length > 0) {
+            // Find first unused matching credit
+            const matchingIndex = matchingCredits.findIndex(credit => !usedCredits.has(credit.uuid));
+            
+            if (matchingIndex !== -1) {
+                const matchingCredit = matchingCredits[matchingIndex];
+                // Mark this credit as used and skip this debit
+                usedCredits.add(matchingCredit.uuid);
+                removedPairs.push({
+                    debit: debit,
+                    credit: matchingCredit
+                });
+                return;
+            }
+        }
+        
+        // No matching credit found - keep this debit
+        filteredDebits.push(debit);
+    });
+
+    // Collect all credits (both used and unused, including excluded ones and script top-ups)
+    const remainingCredits: Transaction[] = [];
+    credits.forEach(credit => {
+        const isExcluded = exclusionKeywords.some(keyword => 
+            credit.description.includes(keyword)
+        );
+        const isScriptTopUp = credit.description.includes("SCRIPT - TOP-UP");
+        if (isExcluded || isScriptTopUp || !usedCredits.has(credit.uuid)) {
+            remainingCredits.push(credit);
+        }
+    });
+
+    console.log('\x1b[36m%s\x1b[0m', `\nTotal pairs removed: ${removedPairs.length}`);
+    removedPairs.forEach(pair => {
+        console.log('\x1b[36m%s\x1b[0m', `- Debit:  ${pair.debit.description} (${pair.debit.amount})`);
+        console.log('\x1b[36m%s\x1b[0m', `  Credit: ${pair.credit.description} (${pair.credit.amount})`);
+    });
+
+    console.log('\x1b[36m%s\x1b[0m', `\nFinal counts: Debits: ${filteredDebits.length}, Credits: ${remainingCredits.length}, Others: ${others.length}\n`);
+
+    return [...filteredDebits, ...remainingCredits, ...others];
+}
+
 async function main() {
     try {
         console.log('\x1b[32m%s\x1b[0m', '\nSTARTING\n');
@@ -291,9 +379,13 @@ async function main() {
         const monthlyTransactions = (await getTransactions(token, stats.salaryInfo.lastSalaryDate, formattedDate))
             .filter(t => new Date(t.transactionDate) >= new Date(stats.salaryInfo.lastSalaryDate));
 
+        console.log('\x1b[32m%s\x1b[0m', '8. Removing matching debit/credit pairs');
+        const processedTransactions = removeMatchingDebitCreditPairs(monthlyTransactions);
+    
+
         // Calculate spending for the last month including pending transactions
-        console.log('\x1b[32m%s\x1b[0m', '8. Calculating spending for the last month');
-        await calculateSpending(monthlyTransactions, pendingTransactions, stats);
+        console.log('\x1b[32m%s\x1b[0m', '9. Calculating spending for the last month');
+        await calculateSpending(processedTransactions, pendingTransactions, stats);
 
         if (testing){
             console.log('\nFINAL BANKING STATISTICS:');
@@ -304,14 +396,14 @@ async function main() {
         const encryptedData = await encryptStats(stats, ENCRYPTION_PASSWORD);
         
         // Save to Firebase
-        console.log(`\x1b[32m9. Saving to firebase : ${String(!testing)}\x1b[0m`);
+        console.log(`\x1b[32m10. Saving to firebase : ${String(!testing)}\x1b[0m`);
         if (!testing){
             await saveToFirebase(encryptedData);
         }
     } catch (error) {
         console.error('\x1b[31m%s\x1b[0m', 'Error:', error.message);
     } finally {
-        console.log('\x1b[32m%s\x1b[0m', '10. Cleaning up workspace');
+        console.log('\x1b[32m%s\x1b[0m', '11. Cleaning up workspace');
         if (!testing){
             await admin.app().delete();
         }
