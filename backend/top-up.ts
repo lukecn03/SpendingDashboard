@@ -72,6 +72,11 @@ async function checkSaverAccountBalance(token: string, amount: number): Promise<
 }
 
 async function transferFunds(token: string, amount: number): Promise<boolean> {
+
+    if (amount > MONTHLY_BUDGET*0.9){
+        return false;
+    }
+
     const url = new URL(`${API_BASE_URL}/za/pb/v1/accounts/${PRIME_SAVER_ID}/transfermultiple`);
 
     const transferList = [{
