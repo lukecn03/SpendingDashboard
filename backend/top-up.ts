@@ -71,7 +71,7 @@ async function checkSaverAccountBalance(token: string, amount: number): Promise<
     }
 }
 
-async function transferFunds(token: string, amount: number): Promise<boolean> {
+async function transferFundsFromCallToCheque(token: string, amount: number): Promise<boolean> {
 
     if (amount > MONTHLY_BUDGET*0.9){
         return false;
@@ -115,6 +115,49 @@ async function transferFunds(token: string, amount: number): Promise<boolean> {
     }
 }
 
+async function transferFundsFromChequeToCall(token: string, amount: number): Promise<boolean> {
+
+    if (amount > MONTHLY_BUDGET*0.9){
+        return false;
+    }
+
+    const url = new URL(`${API_BASE_URL}/za/pb/v1/accounts/${TRANSACTIONAL_ACCOUNT_ID}/transfermultiple`);
+
+    const transferList = [{
+        beneficiaryAccountId: PRIME_SAVER_ID,
+        amount,
+        myReference: 'SCRIPT - Top-up',
+        theirReference: 'SCRIPT - Top-up'
+    }];
+
+    const payload = {
+        transferList,
+        profileId: `${PROFILE_ID}`
+    };
+
+    const headers = {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
+
+    try {
+        if (testing) {
+            console.log(`FAKE PAID R${amount}`);
+        } else {
+            const response = await fetch(url.toString(), {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(payload),
+            });
+            const data: any = await response.json();
+            console.log('\x1b[32m%s\x1b[0m', JSON.stringify(data, null, 2));
+        }
+        return true;
+    } catch (error) {
+        console.error('\x1b[31m%s\x1b[0m', 'Transfer error:', error.message);
+        return false;
+    }
+}
 
 async function main() {
     try {
@@ -126,12 +169,19 @@ async function main() {
 
         console.log('\x1b[32m%s\x1b[0m', '2. Checking transactional account balance');
         const balance = await getTransactionalAccountBalance(token);
+        
         let transferAmount = MONTHLY_BUDGET - balance;
         transferAmount = Math.round(transferAmount * 100) / 100; // Rounds to 2 decimal places
 
-        console.log('\x1b[32m%s\x1b[0m', '3. Checking savings account balance and transferring funds');
-        if (await checkSaverAccountBalance(token, transferAmount)){
-            await transferFunds(token, transferAmount);
+        if (transferAmount > 0) {
+            console.log('\x1b[32m%s\x1b[0m', '3. Checking savings account balance and transferring funds');
+            if (await checkSaverAccountBalance(token, transferAmount)) {
+                await transferFundsFromCallToCheque(token, transferAmount); // Top Up
+            }
+        } else if (transferAmount < 0) {
+            console.log('\x1b[32m%s\x1b[0m', '3. Transferring excess funds from cheque to call');
+            transferAmount = Math.abs(transferAmount); // Make the amount positive for transfer
+            await transferFundsFromChequeToCall(token, transferAmount); // Transfer excess to savings
         }
 
     } catch (error) {
