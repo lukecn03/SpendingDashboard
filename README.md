@@ -141,6 +141,7 @@ DATABASE_URL=your-firebase-realtime-db-url
 EXCLUSION_CATEGORIES=["CLARITY", "RENT", "TAX FREE SAVINGS", "CAR PAYMENT", "GYM", "CHARITY"]
 SALARY_DESCRIPTION=description-of-salary-transaction
 SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION=description-of-savings-transfers
+INTERNAL_TRANSFER_DESCRIPTION=MR LC NOBREGA
 # INVESTEC_CARD_KEY=optional-if-needed
 ```
 

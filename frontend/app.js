@@ -53,7 +53,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                   "MEDICAL AID": 3610.87,
                   "TAX FREE SAVINGS": 3000
                 },
-                "pendingTransactionsTotal": 500.20
+                "pendingTransactionsTotal": 500.20,
+                "totalIncome": 45000.00,
+                "netTotal": 6735.28
               },
               "totalCardSpent": 7150.43
             }
@@ -372,6 +374,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('fixed-spending').textContent = formatCurrency(stats.spending.monthly.nonDiscretionary);
         document.getElementById('pending-transactions').textContent = formatCurrency(stats.spending.monthly.pendingTransactionsTotal);
         document.getElementById('card-spending').textContent = formatCurrency(stats.spending.totalCardSpent);
+        
+        // Display Total Income and Net Total
+        document.getElementById('total-income').textContent = formatCurrency(stats.spending.monthly.totalIncome);
+        
+        const netTotal = stats.spending.monthly.netTotal;
+        const netTotalElement = document.getElementById('net-total');
+        netTotalElement.textContent = formatCurrency(netTotal);
+        
+        // Color code the net total (green for positive, red for negative)
+        if (netTotal >= 0) {
+            netTotalElement.classList.add('text-success');
+            netTotalElement.classList.remove('text-danger');
+        } else {
+            netTotalElement.classList.add('text-danger');
+            netTotalElement.classList.remove('text-success');
+        }
         
         const cardBudget = stats.accountBalances.monthlyBudget;
         const cardSpent = stats.spending.totalCardSpent;

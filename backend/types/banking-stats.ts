@@ -25,6 +25,8 @@ export type BankingStats = {
               [keyword: string]: number;
           };
           pendingTransactionsTotal: number;
+          totalIncome: number;
+          netTotal: number;
       };
       totalCardSpent: number;
   };
@@ -55,6 +57,8 @@ export function initBankingStats(): BankingStats {
               nonDiscretionary: 0,
               byExclusion: {},
               pendingTransactionsTotal: 0,
+              totalIncome: 0,
+              netTotal: 0,
           },
           totalCardSpent:0
       },

@@ -18,6 +18,7 @@ const ENCRYPTION_PASSWORD = process.env.ENCRYPTION_PASSWORD!;
 const FIREBASE_SERVICE_ACCOUNT = process.env.FIREBASE_SERVICE_ACCOUNT!;
 const DATABASE_URL = process.env.DATABASE_URL!;
 const SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION = process.env.SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION!;
+const INTERNAL_TRANSFER_DESCRIPTION = process.env.INTERNAL_TRANSFER_DESCRIPTION!;
 const MONTHLY_BUDGET = Number(process.env.MONTHLY_BUDGET!);
 
 
@@ -158,11 +159,21 @@ async function getPendingTransactions(token: string): Promise<Transaction[]> {
 }
 
 async function calculateSpending(transactions: Transaction[], pendingTransactions: Transaction[], stats: BankingStats): Promise<void> {
+    let totalIncome = 0;
+    
     for (const transaction of transactions) {
         const isInternalTransfer = transaction.description.includes(SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION);
+        const isInternalTransferCredit = transaction.description.includes(INTERNAL_TRANSFER_DESCRIPTION);
         
         if (isInternalTransfer) {
             continue; 
+        }
+
+        // Calculate total income from all CREDIT transactions (excluding script top-ups and internal transfers)
+        if (transaction.type === 'CREDIT' && 
+            !transaction.description.includes("SCRIPT - TOP-UP") && 
+            !isInternalTransferCredit) {
+            totalIncome += transaction.amount;
         }
 
         if (transaction.type !== 'DEBIT') {
@@ -209,11 +220,17 @@ async function calculateSpending(transactions: Transaction[], pendingTransaction
     stats.spending.totalCardSpent = stats.spending.byCategory["CardPurchases"] + stats.spending.monthly.pendingTransactionsTotal;
 
     stats.spending.monthly.total += stats.spending.monthly.pendingTransactionsTotal;
+    
+    // Set total income and calculate net total
+    stats.spending.monthly.totalIncome = totalIncome;
+    stats.spending.monthly.netTotal = totalIncome - stats.spending.monthly.total;
 
     stats.spending.monthly.total = parseFloat(stats.spending.monthly.total.toFixed(2));
     stats.spending.monthly.discretionary = parseFloat(stats.spending.monthly.discretionary.toFixed(2));
     stats.spending.monthly.nonDiscretionary = parseFloat(stats.spending.monthly.nonDiscretionary.toFixed(2));
     stats.spending.monthly.pendingTransactionsTotal = parseFloat(stats.spending.monthly.pendingTransactionsTotal.toFixed(2));
+    stats.spending.monthly.totalIncome = parseFloat(stats.spending.monthly.totalIncome.toFixed(2));
+    stats.spending.monthly.netTotal = parseFloat(stats.spending.monthly.netTotal.toFixed(2));
     stats.spending.totalCardSpent = parseFloat(stats.spending.totalCardSpent.toFixed(2));
     
     for (const key in stats.spending.byCategory) {
