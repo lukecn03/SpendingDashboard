@@ -296,3 +296,191 @@ h1, h2, h3, h4, h5, h6 {
         display: none;
     }
 }
+
+/* Income Transactions Table */
+.income-transactions-list {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.income-transactions-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.income-transactions-table thead {
+    background-color: var(--navy-light);
+    border-bottom: 2px solid var(--royal-blue);
+}
+
+.income-transactions-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--lightest-gray);
+    font-size: 0.95rem;
+}
+
+.income-transactions-table tbody tr {
+    border-bottom: 1px solid var(--slate-dark);
+    transition: background-color 0.2s ease;
+}
+
+.income-transactions-table tbody tr:hover {
+    background-color: var(--navy-light);
+}
+
+.income-transactions-table tbody td {
+    padding: 12px 15px;
+    color: var(--lightest-slate);
+    font-size: 0.95rem;
+}
+
+.income-transactions-table .date-col {
+    min-width: 100px;
+    font-weight: 500;
+}
+
+.income-transactions-table .description-col {
+    flex: 1;
+    min-width: 200px;
+}
+
+.income-transactions-table .amount-col {
+    text-align: right;
+    min-width: 120px;
+    font-weight: 500;
+    font-family: 'Courier New', monospace;
+    color: var(--success-green);
+}
+
+.income-transactions-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.income-transactions-table .total-row {
+    background-color: var(--slate-dark);
+    border-top: 2px solid var(--success-green);
+    font-weight: 600;
+}
+
+.income-transactions-table .total-label {
+    text-align: right;
+    padding: 12px 15px;
+    color: var(--lightest-gray);
+}
+
+.income-transactions-table .total-row .total-amount {
+    color: var(--success-green);
+}
+
+@media (max-width: 576px) {
+    .income-transactions-table th,
+    .income-transactions-table td {
+        padding: 10px 8px;
+        font-size: 0.85rem;
+    }
+    
+    .income-transactions-table .description-col {
+        min-width: 150px;
+    }
+    
+    .income-transactions-table .amount-col {
+        min-width: 100px;
+    }
+}
+
+/* Online Payments Table */
+.payments-list {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.payments-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.payments-table thead {
+    background-color: var(--navy-light);
+    border-bottom: 2px solid var(--royal-red);
+}
+
+.payments-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--lightest-gray);
+    font-size: 0.95rem;
+}
+
+.payments-table tbody tr {
+    border-bottom: 1px solid var(--slate-dark);
+    transition: background-color 0.2s ease;
+}
+
+.payments-table tbody tr:hover {
+    background-color: var(--navy-light);
+}
+
+.payments-table tbody td {
+    padding: 12px 15px;
+    color: var(--lightest-slate);
+    font-size: 0.95rem;
+}
+
+.payments-table .date-col {
+    min-width: 100px;
+    font-weight: 500;
+}
+
+.payments-table .description-col {
+    flex: 1;
+    min-width: 200px;
+}
+
+.payments-table .amount-col {
+    text-align: right;
+    min-width: 120px;
+    font-weight: 500;
+    font-family: 'Courier New', monospace;
+    color: var(--royal-red);
+}
+
+.payments-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.payments-table .total-row {
+    background-color: var(--slate-dark);
+    border-top: 2px solid var(--royal-red);
+    font-weight: 600;
+}
+
+.payments-table .total-label {
+    text-align: right;
+    padding: 12px 15px;
+    color: var(--lightest-gray);
+}
+
+.payments-table .total-row .total-amount {
+    color: var(--royal-red);
+}
+
+@media (max-width: 576px) {
+    .payments-table th,
+    .payments-table td {
+        padding: 10px 8px;
+        font-size: 0.85rem;
+    }
+    
+    .payments-table .description-col {
+        min-width: 150px;
+    }
+    
+    .payments-table .amount-col {
+        min-width: 100px;
+    }
+}

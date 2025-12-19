@@ -27,7 +27,23 @@ export type BankingStats = {
           pendingTransactionsTotal: number;
       };
       totalCardSpent: number;
+      onlineBankingPayments: Array<{
+          date: string;
+          description: string;
+          amount: number;
+      }>;
   };
+  income: {
+      monthly: {
+          total: number;
+      };
+      transactions: Array<{
+          date: string;
+          description: string;
+          amount: number;
+      }>;
+  };
+  netProfit: number;
 };
 
 export function initBankingStats(): BankingStats {
@@ -56,7 +72,15 @@ export function initBankingStats(): BankingStats {
               byExclusion: {},
               pendingTransactionsTotal: 0,
           },
-          totalCardSpent:0
+          totalCardSpent:0,
+          onlineBankingPayments: []
       },
+      income: {
+          monthly: {
+              total: 0,
+          },
+          transactions: [],
+      },
+      netProfit: 0,
   };
 }

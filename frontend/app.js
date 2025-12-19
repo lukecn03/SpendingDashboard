@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               "pendingCount": 1
             },
             "spending": {
-              "byCategory": { // the amounts in exclusion is not included here
+              "byCategory": {
                 "CardPurchases": 6650.23,
                 "VASTransactions": 540.20,
                 "FeesAndInterest": 110.50,
@@ -43,9 +43,9 @@ document.addEventListener('DOMContentLoaded', async () => {
               },
               "monthly": {
                 "total": 38264.72,
-                "discretionary": 8021.13, // Sum of categories + pending
-                "nonDiscretionary": 30243.59, // Sum of exclusion
-                "byExclusion": { // Created based on description of the payment
+                "discretionary": 8021.13,
+                "nonDiscretionary": 30243.59,
+                "byExclusion": {
                   "RENT": 12320.53,
                   "Car INSURANCE": 1200,
                   "SCHOOL FEES": 4101.98,
@@ -55,8 +55,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                 },
                 "pendingTransactionsTotal": 500.20
               },
-              "totalCardSpent": 7150.43
-            }
+              "totalCardSpent": 7150.43,
+              "onlineBankingPayments": [
+                {
+                  "date": "2025-03-28",
+                  "description": "ONLINE TRANSFER TO UNCLE BOB",
+                  "amount": 150.00
+                },
+                {
+                  "date": "2025-04-02",
+                  "description": "ELECTRICITY PAYMENT ESKOM",
+                  "amount": 70.00
+                }
+              ]
+            },
+            "income": {
+              "monthly": {
+                "total": 45000.00
+              },
+              "transactions": [
+                {
+                  "date": "2025-03-25",
+                  "description": "Income",
+                  "amount": 45000.00
+                }
+              ]
+            },
+            "netProfit": 6735.28
           };
         
         displayStats(demoData);
@@ -373,6 +398,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('pending-transactions').textContent = formatCurrency(stats.spending.monthly.pendingTransactionsTotal);
         document.getElementById('card-spending').textContent = formatCurrency(stats.spending.totalCardSpent);
         
+        // Display income and net profit
+        document.getElementById('monthly-income').textContent = formatCurrency(stats.income.monthly.total);
+        document.getElementById('net-profit').textContent = formatCurrency(stats.netProfit);
+        
+        const netProfitElement = document.getElementById('net-profit');
+        if (stats.netProfit >= 0) {
+            netProfitElement.classList.remove('text-danger');
+            netProfitElement.classList.add('text-success');
+        } else {
+            netProfitElement.classList.remove('text-success');
+            netProfitElement.classList.add('text-danger');
+        }
+        
         const cardBudget = stats.accountBalances.monthlyBudget;
         const cardSpent = stats.spending.totalCardSpent;
         const remainingBudget = cardBudget - cardSpent;
@@ -396,6 +434,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         renderSpendingChart(stats);
+        renderIncomeTransactions(stats);
+        renderOnlinePayments(stats);
     }
 
     function renderSpendingChart(stats) {
@@ -490,6 +530,115 @@ document.addEventListener('DOMContentLoaded', async () => {
                 legendContainer.appendChild(legendItem);
             });
         });
+    }
+
+    function renderIncomeTransactions(stats) {
+        const container = document.getElementById('income-transactions-container');
+        container.innerHTML = '';
+
+        if (!stats.income.transactions || stats.income.transactions.length === 0) {
+            container.innerHTML = '<p class="text-muted">No income transactions recorded this period.</p>';
+            return;
+        }
+
+        const formatCurrency = (amount) => new Intl.NumberFormat('en-ZA', {
+            style: 'currency',
+            currency: 'ZAR'
+        }).format(amount);
+
+        const table = document.createElement('table');
+        table.className = 'income-transactions-table';
+
+        // Create header
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        headerRow.innerHTML = `
+            <th>Date</th>
+            <th>Description</th>
+            <th class="amount-col">Amount</th>
+        `;
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // Create body
+        const tbody = document.createElement('tbody');
+        stats.income.transactions.forEach(transaction => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="date-col">${formatDate(transaction.date)}</td>
+                <td class="description-col">${transaction.description}</td>
+                <td class="amount-col">${formatCurrency(transaction.amount)}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Add total row
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'total-row';
+        totalRow.innerHTML = `
+            <td colspan="2" class="total-label">Total Income:</td>
+            <td class="amount-col total-amount">${formatCurrency(stats.income.monthly.total)}</td>
+        `;
+        tbody.appendChild(totalRow);
+
+        table.appendChild(tbody);
+        container.appendChild(table);
+    }
+
+    function renderOnlinePayments(stats) {
+        const container = document.getElementById('online-payments-container');
+        container.innerHTML = '';
+
+        if (!stats.spending.onlineBankingPayments || stats.spending.onlineBankingPayments.length === 0) {
+            container.innerHTML = '<p class="text-muted">No online banking payments recorded this period.</p>';
+            return;
+        }
+
+        const formatCurrency = (amount) => new Intl.NumberFormat('en-ZA', {
+            style: 'currency',
+            currency: 'ZAR'
+        }).format(amount);
+
+        const table = document.createElement('table');
+        table.className = 'payments-table';
+
+        // Create header
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        headerRow.innerHTML = `
+            <th>Date</th>
+            <th>Description</th>
+            <th class="amount-col">Amount</th>
+        `;
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // Create body
+        const tbody = document.createElement('tbody');
+        let totalPayments = 0;
+        
+        stats.spending.onlineBankingPayments.forEach(payment => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="date-col">${formatDate(payment.date)}</td>
+                <td class="description-col">${payment.description}</td>
+                <td class="amount-col">${formatCurrency(payment.amount)}</td>
+            `;
+            tbody.appendChild(row);
+            totalPayments += payment.amount;
+        });
+
+        // Add total row
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'total-row';
+        totalRow.innerHTML = `
+            <td colspan="2" class="total-label">Total Online Payments:</td>
+            <td class="amount-col total-amount">${formatCurrency(totalPayments)}</td>
+        `;
+        tbody.appendChild(totalRow);
+
+        table.appendChild(tbody);
+        container.appendChild(table);
     }
   
     function renderCategories(stats) {
