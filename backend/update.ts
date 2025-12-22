@@ -17,7 +17,6 @@ const TRANSACTIONAL_ACCOUNT_ID = process.env.TRANSACTIONAL_ACCOUNT_ID!;
 const ENCRYPTION_PASSWORD = process.env.ENCRYPTION_PASSWORD!;
 const FIREBASE_SERVICE_ACCOUNT = process.env.FIREBASE_SERVICE_ACCOUNT!;
 const DATABASE_URL = process.env.DATABASE_URL!;
-const SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION = process.env.SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION!;
 const INTERNAL_TRANSFER_DESCRIPTION = process.env.INTERNAL_TRANSFER_DESCRIPTION!;
 const MONTHLY_BUDGET = Number(process.env.MONTHLY_BUDGET!);
 
@@ -160,7 +159,7 @@ async function getPendingTransactions(token: string): Promise<Transaction[]> {
 
 async function calculateSpending(transactions: Transaction[], pendingTransactions: Transaction[], stats: BankingStats): Promise<void> {
     for (const transaction of transactions) {
-        const isInternalTransfer = transaction.description.includes(SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION);
+        const isInternalTransfer = transaction.description.includes(INTERNAL_TRANSFER_DESCRIPTION);
         
         if (isInternalTransfer) {
             continue; 
@@ -245,8 +244,7 @@ async function calculateIncome(transactions: Transaction[], stats: BankingStats)
     for (const transaction of transactions) {
         // Skip internal transfers - they should not count as income
         // Check both the internal transfer prefix and the full savings account transaction description
-        const isInternalTransfer = transaction.description.includes(INTERNAL_TRANSFER_DESCRIPTION) || 
-                                   transaction.description.includes(SAVINGS_ACCOUNT_TRANSACTION_DESCRIPTION);
+        const isInternalTransfer = transaction.description.includes(INTERNAL_TRANSFER_DESCRIPTION);
         
         if (isInternalTransfer) {
             continue; 

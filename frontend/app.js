@@ -398,17 +398,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('pending-transactions').textContent = formatCurrency(stats.spending.monthly.pendingTransactionsTotal);
         document.getElementById('card-spending').textContent = formatCurrency(stats.spending.totalCardSpent);
         
-        // Display income and net profit
-        document.getElementById('monthly-income').textContent = formatCurrency(stats.income.monthly.total);
-        document.getElementById('net-profit').textContent = formatCurrency(stats.netProfit);
+        // Display financial summary (consolidated card)
+        document.getElementById('summary-total-spending').textContent = formatCurrency(stats.spending.monthly.total);
+        document.getElementById('summary-monthly-income').textContent = formatCurrency(stats.income.monthly.total);
+        document.getElementById('summary-net-profit').textContent = formatCurrency(stats.netProfit);
         
-        const netProfitElement = document.getElementById('net-profit');
+        const summaryNetProfitElement = document.getElementById('summary-net-profit');
         if (stats.netProfit >= 0) {
-            netProfitElement.classList.remove('text-danger');
-            netProfitElement.classList.add('text-success');
+            summaryNetProfitElement.classList.remove('text-danger');
+            summaryNetProfitElement.classList.add('text-success');
         } else {
-            netProfitElement.classList.remove('text-success');
-            netProfitElement.classList.add('text-danger');
+            summaryNetProfitElement.classList.remove('text-success');
+            summaryNetProfitElement.classList.add('text-danger');
         }
         
         const cardBudget = stats.accountBalances.monthlyBudget;
