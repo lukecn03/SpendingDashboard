@@ -3,7 +3,12 @@ import * as dotenv from 'dotenv';
 import { BankingStats, initBankingStats } from './types/banking-stats.js';
 import { encryptStats } from './utils/encryption.js';
 import admin from 'firebase-admin';
+import { promises as fs } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 const { credential } = admin;
+
+const __dirname = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 dotenv.config();
 
@@ -112,7 +117,7 @@ async function getTransactions(token: string, fromDate: string, toDate: string):
 async function getSalaryTransactionDate(token: string): Promise<string> {
     const today = new Date();
     const fromDate = new Date(today);
-    fromDate.setMonth(fromDate.getMonth() - 1); 
+    fromDate.setDate(fromDate.getDate() - 40); 
     const formattedFromDate = fromDate.toISOString().split('T')[0];
     const formattedToDate = today.toISOString().split('T')[0];
 
@@ -120,6 +125,7 @@ async function getSalaryTransactionDate(token: string): Promise<string> {
     const salaryTransaction = transactions.find(transaction => transaction.description.includes(salaryDescription));
 
     if (salaryTransaction) {
+        await logTransactionsToFile('salary', [salaryTransaction]);
         return salaryTransaction.transactionDate;
     } else {
         // If no salary transaction found, return 21st of previous month
@@ -155,6 +161,34 @@ async function getPendingTransactions(token: string): Promise<Transaction[]> {
     const response = await fetch(url, { headers });
     const data: any = await response.json();
     return data.data.transactions;
+}
+
+async function logTransactionsToFile(transactionName: string, transactions: Transaction[]): Promise<void> {
+    // Only log in testing/dev mode
+    if (!testing) {
+        return;
+    }
+
+    try {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const logFileName = `transactions_${transactionName}_${timestamp}.json`;
+        const logFilePath = join(__dirname, 'logs', logFileName);
+        
+        // Create logs directory if it doesn't exist
+        await fs.mkdir(join(__dirname, 'logs'), { recursive: true });
+        
+        const logData = {
+            timestamp: new Date().toISOString(),
+            transactionType: transactionName,
+            count: transactions.length,
+            transactions: transactions
+        };
+        
+        await fs.writeFile(logFilePath, JSON.stringify(logData, null, 2));
+        console.log(`\x1b[36m%s\x1b[0m`, `Logged ${transactions.length} ${transactionName} transactions to ${logFileName}`);
+    } catch (error) {
+        console.error('\x1b[31m%s\x1b[0m', `Error logging ${transactionName} transactions:`, error.message);
+    }
 }
 
 async function calculateSpending(transactions: Transaction[], pendingTransactions: Transaction[], stats: BankingStats): Promise<void> {
@@ -327,6 +361,7 @@ async function main() {
         // Fetch transactions for the last day
         console.log('\x1b[32m%s\x1b[0m', '4. Fetching transactions for the last day');
         const lastDayTransactions = await getTransactions(token, formattedDate, formattedDate);
+        await logTransactionsToFile('lastDay', lastDayTransactions);
         stats.dailyTransactions.count = lastDayTransactions.length;
         stats.dailyTransactions.debitCount = lastDayTransactions.filter(t => t.type === 'DEBIT').length;
         stats.dailyTransactions.creditCount = lastDayTransactions.filter(t => 
@@ -336,6 +371,7 @@ async function main() {
         // Fetch pending transactions
         console.log('\x1b[32m%s\x1b[0m', '5. Fetching pending transactions');
         const pendingTransactions = await getPendingTransactions(token);
+        await logTransactionsToFile('pending', pendingTransactions);
         stats.dailyTransactions.pendingCount = pendingTransactions.length;
 
         // Handle overdraft
@@ -346,6 +382,7 @@ async function main() {
         console.log('\x1b[32m%s\x1b[0m', '7. Fetching transactions from salary date to today');
         const monthlyTransactions = (await getTransactions(token, stats.salaryInfo.lastSalaryDate, formattedDate))
             .filter(t => new Date(t.transactionDate) >= new Date(stats.salaryInfo.lastSalaryDate));
+        await logTransactionsToFile('monthly', monthlyTransactions);
 
         // Calculate spending for the last month including pending transactions
         console.log('\x1b[32m%s\x1b[0m', '8. Calculating spending for the last month');
