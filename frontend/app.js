@@ -453,24 +453,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const sortedCategories = Object.entries(allCategories)
             .sort((a, b) => b[1] - a[1]);
-        
-        const topCategories = sortedCategories.slice(0, 10);
-        
-        const labels = topCategories.map(([name]) => name);
-        const data = topCategories.map(([, amount]) => amount);
-        
-        const backgroundColors = [
-            'rgba(54, 162, 235, 0.8)',
-            'rgba(255, 99, 132, 0.8)',
-            'rgba(75, 192, 192, 0.8)',
-            'rgba(153, 102, 255, 0.8)',
-            'rgba(255, 159, 64, 0.8)',
-            'rgba(199, 199, 199, 0.8)',
-            'rgba(83, 102, 255, 0.8)',
-            'rgba(255, 99, 71, 0.8)',
-            'rgba(60, 179, 113, 0.8)',
-            'rgba(238, 130, 238, 0.8)'
-        ];
+
+        // Show all categories (no arbitrary cap). If there are many tiny
+        // categories consider grouping into "Other" later.
+        const labels = sortedCategories.map(([name]) => name);
+        const data = sortedCategories.map(([, amount]) => amount);
+
+        // Generate a color palette matching the number of categories so
+        // every slice gets a distinct color even when there are >10 items.
+        const generateColors = (count) => {
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                const hue = Math.round((i * 360) / count);
+                colors.push(`hsla(${hue}, 70%, 50%, 0.8)`);
+            }
+            return colors;
+        };
+
+        const backgroundColors = generateColors(labels.length);
         
         const chartData = {
             labels: labels,
